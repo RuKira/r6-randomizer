@@ -6,6 +6,8 @@ function OperatorRandomizerUI() {
     const [defenders, setDefenders] = useState([]);
     const [chosenAttackers, setChosenAttackers] = useState([]);
     const [chosenDefenders, setChosenDefenders] = useState([]);
+    const STORAGE_KEY = "r6-randomizer-disabled";
+    const [feedback, setFeedback] = useState("");
 
     useEffect(() => {
         const defaultWeight = 10;
@@ -29,11 +31,20 @@ function OperatorRandomizerUI() {
             role,
             weight: defaultWeight,
             enabled: true,
-            image: `/images/operators/${name.toLowerCase().replace(/[^a-z0-9]/gi, '')}.png`
+            image: `images/operators/${name.toLowerCase().replace(/[^a-z0-9]/gi, '')}.png`
         }));
 
-        setAttackers(buildOps(attackerNames, 'attack'));
-        setDefenders(buildOps(defenderNames, 'defense'));
+        const baseAttackers = buildOps(attackerNames, 'attack');
+        const baseDefenders = buildOps(defenderNames, 'defense');
+
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved) {
+            setAttackers(loadDisabledOperators(baseAttackers, 'attack', saved));
+            setDefenders(loadDisabledOperators(baseDefenders, 'defense', saved));
+        } else {
+            setAttackers(baseAttackers);
+            setDefenders(baseDefenders);
+        }
     }, []);
 
     const toggleOperator = (name, role) => {
@@ -76,6 +87,14 @@ function OperatorRandomizerUI() {
         }
     };
 
+    const removeChosen = (name, role) => {
+        const setChosen = role === 'attack' ? setChosenAttackers : setChosenDefenders;
+        const chosenList = role === 'attack' ? chosenAttackers : chosenDefenders;
+
+        const updated = chosenList.filter(op => op.name !== name);
+        setChosen(updated);
+    }
+
     const weightedRandom = (list) => {
         const pool = list.filter(op => op.enabled);
         const totalWeight = pool.reduce((sum, op) => sum + op.weight, 0);
@@ -117,9 +136,17 @@ function OperatorRandomizerUI() {
     };
 
     const resetAll = () => {
-        const reset = list => list.map(op => ({ ...op, enabled: true, weight: 10 }));
-        setAttackers(prev => reset(prev));
-        setDefenders(prev => reset(prev));
+        const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+        if (preset) {
+            setAttackers(prev => loadDisabledOperators(prev.map(op => ({ ...op, weight: 10 })), 'attack', preset));
+            setDefenders(prev => loadDisabledOperators(prev.map(op => ({ ...op, weight: 10 })), 'defense', preset));
+        } else {
+            const reset = list => list.map(op => ({ ...op, enabled: true, weight: 10 }));
+            setAttackers(prev => reset(prev));
+            setDefenders(prev => reset(prev));
+        }
+
         setChosenAttackers([]);
         setChosenDefenders([]);
     };
@@ -139,20 +166,72 @@ function OperatorRandomizerUI() {
         </div>
     );
 
-    const renderChosen = (list) => (
+    const renderChosen = (list, role) => (
         <div className="chosen-operators">
             {list.map(op => (
-                <div key={op.name} className="chosen-icon">
+                <div
+                    key={op.name}
+                    className="chosen-icon"
+                    onClick={() => removeChosen(op.name, role)}
+                    title="Click to remove"
+                >
                     <img src={op.image} alt={op.name} />
                 </div>
             ))}
         </div>
     );
 
+    const saveDisabledOperators = (attackers, defenders) => {
+        const data = {
+            attack: attackers.filter(op => !op.enabled).map(op => op.name),
+            defense: defenders.filter(op => !op.enabled).map(op => op.name)
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    };
+
+    const loadDisabledOperators = (ops, role, preset) =>
+        ops.map(op => ({
+            ...op,
+            enabled: !preset[role].includes(op.name)
+        }));
+
+    const showFeedback = (message) => {
+        setFeedback(message);
+        setTimeout(() => setFeedback(""), 2000); // Clears after 2 seconds
+    };
+
+    const handleSavePreset = () => {
+        saveDisabledOperators(attackers, defenders);
+        showFeedback("Preset saved!");
+    };
+
+    const handleLoadPreset = () => {
+        try {
+            const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            if (!preset || !preset.attack || !preset.defense) {
+                showFeedback("No saved preset found.");
+                return;
+            }
+
+            setAttackers(prev => loadDisabledOperators(prev, 'attack', preset));
+            setDefenders(prev => loadDisabledOperators(prev, 'defense', preset));
+            showFeedback("Preset loaded!");
+        } catch (err) {
+            console.warn("Failed to load preset:", err);
+            showFeedback("Failed to load preset.");
+        }
+    };
+
+    const handleDefaultPreset = () => {
+        setAttackers(prev => prev.map(op => ({ ...op, enabled: true })));
+        setDefenders(prev => prev.map(op => ({ ...op, enabled: true })));
+        showFeedback("Default preset applied!");
+    };
+
     return (
         <div className="grid-layout centered fullscreen">
             <div className="chosen-list chosen-left">
-                {renderChosen(chosenAttackers)}
+                {renderChosen(chosenAttackers, 'attack')}
             </div>
             <div className="operators-grid">
                 <h2>Attackers</h2>
@@ -161,13 +240,17 @@ function OperatorRandomizerUI() {
             <div className="buttons-area">
                 <button onClick={() => { rollOperators('attack'); rollOperators('defense'); }}>SPIN</button>
                 <button onClick={resetAll}>RESET</button>
+                <button onClick={handleSavePreset}>SAVE</button>
+                <button onClick={handleLoadPreset}>LOAD</button>
+                <button onClick={handleDefaultPreset}>DEFAULT</button>
+                {feedback && <div className="feedback">{feedback}</div>}
             </div>
             <div className="operators-grid">
                 <h2>Defenders</h2>
                 {renderGrid(defenders, 'defense')}
             </div>
             <div className="chosen-list chosen-right">
-                {renderChosen(chosenDefenders)}
+                {renderChosen(chosenDefenders, 'defense')}
             </div>
         </div>
     );
