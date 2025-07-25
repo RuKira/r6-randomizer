@@ -1,0 +1,144 @@
+/* App.css */
+
+body, html {
+  margin: 0;
+  padding: 0;
+  background-color: #111;
+  color: white;
+  font-family: Arial, sans-serif;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Prevent scrollbars */
+}
+
+.fullscreen {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.operators-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.operators-grid h2 {
+  margin-bottom: 12px;
+}
+
+.grid-operators {
+  display: grid;
+  grid-template-columns: repeat(5, 80px);
+  gap: 12px;
+}
+
+.op-icon {
+  width: 80px;
+  height: 80px;
+  background-color: #222;
+  border: 2px solid #444;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.op-icon img {
+  width: 64px;
+  height: 64px;
+}
+
+.op-icon.disabled {
+  opacity: 0.2;
+}
+
+.buttons-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.buttons-area button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buttons-area button:hover {
+  background-color: #555;
+}
+
+.chosen-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.chosen-icon {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #888;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chosen-icon img {
+  width: 48px;
+  height: 48px;
+}
+
+.chosen-left {
+  margin-right: 20px;
+}
+
+.chosen-right {
+  margin-left: 20px;
+}
+
+.op-icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: 6px;
+  cursor: pointer;
+}
+
+.op-weight {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-family: sans-serif;
+  pointer-events: none;
+}
