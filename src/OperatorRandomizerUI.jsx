@@ -96,15 +96,26 @@ function OperatorRandomizerUI() {
     }
 
     const weightedRandom = (list) => {
-        const pool = list.filter(op => op.enabled);
-        const totalWeight = pool.reduce((sum, op) => sum + op.weight, 0);
-        const rand = Math.random() * totalWeight;
-        let acc = 0;
-        for (const op of pool) {
-            acc += op.weight;
-            if (rand <= acc) return op;
+        const pool = [];
+
+        for (const op of list) {
+            if (op.enabled) {
+                for (let i = 0; i < op.weight; i++) {
+                    pool.push(op);
+                }
+            }
         }
+
+        if (pool.length === 0) return null;
+
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+
+        return pool[0];
     };
+
 
     const applySavedPresetToList = (list, role, preset) => {
         return list.map(op => ({
