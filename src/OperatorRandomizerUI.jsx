@@ -6,7 +6,7 @@ function OperatorRandomizerUI() {
     const [defenders, setDefenders] = useState([]);
     const [chosenAttackers, setChosenAttackers] = useState([]);
     const [chosenDefenders, setChosenDefenders] = useState([]);
-    const STORAGE_KEY = "r6-randomizer-disabled";
+    const STORAGE_KEY = "r6-randomizer-preset";
     const [feedback, setFeedback] = useState("");
 
     useEffect(() => {
@@ -106,41 +106,43 @@ function OperatorRandomizerUI() {
         }
     };
 
+    const applySavedPresetToList = (list, role, preset) => {
+        return list.map(op => ({
+            ...op,
+            enabled: !preset[role].includes(op.name)
+        }));
+    };
+
     const rollOperators = (role) => {
-        const list = role === 'attack' ? attackers : defenders;
-        const setList = role === 'attack' ? setAttackers : setDefenders;
-        const setChosen = role === 'attack' ? setChosenAttackers : setChosenDefenders;
-
-        const chosen = [];
-        const usedNames = new Set();
-
-        while (chosen.length < 6) {
-            const op = weightedRandom(list);
-            if (op && !usedNames.has(op.name)) {
-                usedNames.add(op.name);
-                chosen.push(op);
-            }
-        }
-
-        const updatedList = list.map(op => {
-            if (!op.enabled) return op;
-            if (usedNames.has(op.name)) {
-                return { ...op, weight: Math.max(1, op.weight - 1) };
+        const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (preset) {
+            if (role === 'attack') {
+                setAttackers(prev => {
+                    const updated = applySavedPresetToList(prev, 'attack', preset);
+                    doRoll(updated, setAttackers, setChosenAttackers);
+                    return updated;
+                });
             } else {
-                return { ...op, weight: op.weight + 1 };
+                setDefenders(prev => {
+                    const updated = applySavedPresetToList(prev, 'defense', preset);
+                    doRoll(updated, setDefenders, setChosenDefenders);
+                    return updated;
+                });
             }
-        });
-
-        setList(updatedList);
-        setChosen(chosen);
+        } else {
+            const list = role === 'attack' ? attackers : defenders;
+            const setList = role === 'attack' ? setAttackers : setDefenders;
+            const setChosen = role === 'attack' ? setChosenAttackers : setChosenDefenders;
+            doRoll(list, setList, setChosen);
+        }
     };
 
     const resetAll = () => {
         const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
         if (preset) {
-            setAttackers(prev => loadDisabledOperators(prev.map(op => ({ ...op, weight: 10 })), 'attack', preset));
-            setDefenders(prev => loadDisabledOperators(prev.map(op => ({ ...op, weight: 10 })), 'defense', preset));
+            setAttackers(prev => loadDisabledOperators(prev, 'attack', preset, true)); // true = ignore weights
+            setDefenders(prev => loadDisabledOperators(prev, 'defense', preset, true));
         } else {
             const reset = list => list.map(op => ({ ...op, enabled: true, weight: 10 }));
             setAttackers(prev => reset(prev));
@@ -150,6 +152,7 @@ function OperatorRandomizerUI() {
         setChosenAttackers([]);
         setChosenDefenders([]);
     };
+
 
     const renderGrid = (list, role) => (
         <div className="grid-operators">
@@ -181,19 +184,32 @@ function OperatorRandomizerUI() {
         </div>
     );
 
-    const saveDisabledOperators = (attackers, defenders) => {
+    const saveDisabledOperators = (attackers, defenders, includeWeights = false) => {
         const data = {
             attack: attackers.filter(op => !op.enabled).map(op => op.name),
-            defense: defenders.filter(op => !op.enabled).map(op => op.name)
+            defense: defenders.filter(op => !op.enabled).map(op => op.name),
         };
+
+        if (includeWeights) {
+            data.attackWeights = attackers.map(op => ({ name: op.name, weight: op.weight }));
+            data.defenseWeights = defenders.map(op => ({ name: op.name, weight: op.weight }));
+        }
+
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     };
 
-    const loadDisabledOperators = (ops, role, preset) =>
-        ops.map(op => ({
+
+    const loadDisabledOperators = (ops, role, preset, ignoreWeights = false) => {
+        const weightsMap = new Map(
+            (ignoreWeights ? [] : (preset[`${role}Weights`] || [])).map(w => [w.name, w.weight])
+        );
+
+        return ops.map(op => ({
             ...op,
-            enabled: !preset[role].includes(op.name)
+            enabled: !preset[role].includes(op.name),
+            weight: weightsMap.has(op.name) ? weightsMap.get(op.name) : 10
         }));
+    };
 
     const showFeedback = (message) => {
         setFeedback(message);
@@ -205,28 +221,46 @@ function OperatorRandomizerUI() {
         showFeedback("Preset saved!");
     };
 
-    const handleLoadPreset = () => {
-        try {
-            const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
-            if (!preset || !preset.attack || !preset.defense) {
-                showFeedback("No saved preset found.");
-                return;
-            }
-
-            setAttackers(prev => loadDisabledOperators(prev, 'attack', preset));
-            setDefenders(prev => loadDisabledOperators(prev, 'defense', preset));
-            showFeedback("Preset loaded!");
-        } catch (err) {
-            console.warn("Failed to load preset:", err);
-            showFeedback("Failed to load preset.");
-        }
-    };
-
     const handleDefaultPreset = () => {
-        setAttackers(prev => prev.map(op => ({ ...op, enabled: true })));
-        setDefenders(prev => prev.map(op => ({ ...op, enabled: true })));
-        showFeedback("Default preset applied!");
+        const resetAttack = attackers.map(op => ({ ...op, enabled: true }));
+        const resetDefense = defenders.map(op => ({ ...op, enabled: true }));
+
+        setAttackers(resetAttack);
+        setDefenders(resetDefense);
+        saveDisabledOperators(resetAttack, resetDefense); // Save the new default state
+        showFeedback("Default preset applied & saved!");
     };
+
+    const doRoll = (list, setList, setChosen) => {
+        const chosen = [];
+        const usedNames = new Set();
+
+        while (chosen.length < 6) {
+            const op = weightedRandom(list);
+            if (op && !usedNames.has(op.name)) {
+                usedNames.add(op.name);
+                chosen.push(op);
+            }
+        }
+
+        const updatedList = list.map(op => {
+            if (!op.enabled) return op;
+            if (usedNames.has(op.name)) {
+                return { ...op, weight: Math.max(1, op.weight - 1) };
+            } else {
+                return { ...op, weight: op.weight + 1 };
+            }
+        });
+
+        setList(updatedList);
+        setChosen(chosen);
+    };
+
+    const handleSaveWeights = () => {
+        saveDisabledOperators(attackers, defenders, true);
+        showFeedback("Weights saved to preset!");
+    };
+
 
     return (
         <div className="grid-layout centered fullscreen">
@@ -238,11 +272,11 @@ function OperatorRandomizerUI() {
                 {renderGrid(attackers, 'attack')}
             </div>
             <div className="buttons-area">
-                <button onClick={() => { rollOperators('attack'); rollOperators('defense'); }}>SPIN</button>
-                <button onClick={resetAll}>RESET</button>
-                <button onClick={handleSavePreset}>SAVE</button>
-                <button onClick={handleLoadPreset}>LOAD</button>
-                <button onClick={handleDefaultPreset}>DEFAULT</button>
+                <button onClick={() => { rollOperators('attack'); rollOperators('defense'); }}>SPIN OPERATORS</button>
+                <button onClick={resetAll}>RESET ALL</button>
+                <button onClick={handleSavePreset}>SAVE SELECTION</button>
+                <button onClick={handleSaveWeights}>SAVE WEIGHTS</button>
+                <button onClick={handleDefaultPreset}>DEFAULT SELECTION</button>
                 {feedback && <div className="feedback">{feedback}</div>}
             </div>
             <div className="operators-grid">
