@@ -17,6 +17,7 @@ function OperatorRandomizerUI() {
     const [playedDefenders, setPlayedDefenders] = useState([]);
     const [fadingReroll, setFadingReroll] = useState(null);
     const [allowDupes, setAllowDupes] = useState(false);
+    const [weightChanges, setWeightChanges] = useState({});
 
 
     useEffect(() => {
@@ -51,7 +52,7 @@ function OperatorRandomizerUI() {
         const buildOps = (names, role) => names.map(name => ({
             name,
             role,
-            weight: 10,
+            weight: 5,
             enabled: true,
             image: `images/operators/${name.toLowerCase().replace(/[^a-z0-9]/gi, '')}.png`
         }));
@@ -150,44 +151,69 @@ function OperatorRandomizerUI() {
         const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
         const savedDisabled = preset ? preset[role] || [] : [];
 
-        // Reset temporary disables
-        const cleanedList = list.map(op => {
+        // Re-enable temporarily disabled operators (not in preset)
+        let cleanedList = list.map(op => {
             if (!op.enabled && !savedDisabled.includes(op.name)) {
                 return { ...op, enabled: true };
             }
             return op;
         });
 
-        setList(cleanedList);
-
         // Start with locked choices
+        const originalList = [...cleanedList];
         const lockedOps = chosen.filter(op => locked.includes(op.name));
-        const usedNames = new Set(lockedOps.map(op => op.name));
         const result = [...lockedOps];
+        const usedNames = new Set(lockedOps.map(op => op.name));
 
         while (result.length < 6) {
-            const op = weightedRandom(cleanedList);
+            const pool = cleanedList.filter(op =>
+                op.enabled && (allowDupes || !usedNames.has(op.name))
+            );
 
-            if (!op) break; // No more valid options
+            const op = weightedRandom(pool);
+            if (!op) break;
 
-            if (allowDupes || !usedNames.has(op.name)) {
-                result.push(op);
-                if (!allowDupes) usedNames.add(op.name);
-            }
+            result.push(op);
+            usedNames.add(op.name);
+
+            cleanedList = cleanedList.map(o => {
+                if (o.name === op.name) {
+                    return { ...o, weight: Math.max(1, o.weight - 5) };
+                }
+                return o;
+            });
         }
 
-        // Update weights
-        const updatedList = cleanedList.map(op => {
-            if (!op.enabled) return op;
-            if (usedNames.has(op.name)) {
-                return { ...op, weight: Math.max(1, op.weight - 1) };
-            } else {
-                return { ...op, weight: op.weight + 1 };
+        const finalList = cleanedList.map(op => {
+            if (!usedNames.has(op.name) && op.enabled) {
+                return { ...op, weight: Math.min(15, op.weight + 2) };
+            }
+            return op;
+        });
+
+        const newWeightChanges = {};
+
+        originalList.forEach((oldOp) => {
+            const newOp = finalList.find(o => o.name === oldOp.name);
+            if (!newOp) return;
+
+            if (newOp.weight > oldOp.weight) {
+                newWeightChanges[oldOp.name] = 'up';
+            } else if (newOp.weight < oldOp.weight) {
+                newWeightChanges[oldOp.name] = 'down';
+            } else if (newOp.weight === 15) {
+                newWeightChanges[oldOp.name] = 'hold'; // maxed out, no change possible
             }
         });
 
-        setList(updatedList);
+        setWeightChanges(prev => ({
+            ...prev,
+            ...newWeightChanges,
+        }));
+        setList(finalList);
         setChosen(result);
+
+        setTimeout(() => setWeightChanges({}), 1000);
 
         if (role === 'attack') {
             setLockedAttackers(prev => prev.filter(name => usedNames.has(name)));
@@ -201,6 +227,13 @@ function OperatorRandomizerUI() {
     };
 
     const handleRollBoth = () => {
+        setLockedAttackers([]);
+        setLockedDefenders([]);
+        setRerolledAttackers([]);
+        setRerolledDefenders([]);
+        setPlayedAttackers([]);
+        setPlayedDefenders([]);
+
         rollOperators('attack');
         rollOperators('defense');
     };
@@ -212,7 +245,7 @@ function OperatorRandomizerUI() {
             setAttackers(prev => loadDisabledOperators(prev, 'attack', preset, true)); // true = ignore weights
             setDefenders(prev => loadDisabledOperators(prev, 'defense', preset, true));
         } else {
-            const reset = list => list.map(op => ({ ...op, enabled: true, weight: 10 }));
+            const reset = list => list.map(op => ({ ...op, enabled: true, weight: 5 }));
             setAttackers(prev => reset(prev));
             setDefenders(prev => reset(prev));
         }
@@ -221,7 +254,10 @@ function OperatorRandomizerUI() {
         setChosenDefenders([]);
         setLockedAttackers([]);
         setLockedDefenders([]);
-
+        setRerolledAttackers([]);
+        setRerolledDefenders([]);
+        setPlayedAttackers([]);
+        setPlayedDefenders([]);
     };
 
 
@@ -231,7 +267,11 @@ function OperatorRandomizerUI() {
                 <div
                     key={op.name}
                     title={op.name}
-                    className={`op-icon ${op.enabled ? '' : 'disabled'}`}
+                    className={`op-icon ${op.enabled ? '' : 'disabled'}
+                        ${weightChanges[op.name] === 'up' ? 'weight-up' : ''}
+                        ${weightChanges[op.name] === 'down' ? 'weight-down' : ''}
+                        ${weightChanges[op.name] === 'hold' ? 'weight-hold' : ''}
+                    `}
                     onClick={() => toggleOperator(op.name, role)}
                 >
                 <span className="op-weight">{op.weight}</span>
@@ -331,7 +371,7 @@ function OperatorRandomizerUI() {
         return ops.map(op => ({
             ...op,
             enabled: !preset[role].includes(op.name),
-            weight: weightsMap.has(op.name) ? weightsMap.get(op.name) : 10
+            weight: weightsMap.has(op.name) ? weightsMap.get(op.name) : 5
         }));
     };
 
@@ -356,7 +396,10 @@ function OperatorRandomizerUI() {
 
         setLockedAttackers([]);
         setLockedDefenders([]);
-
+        setRerolledAttackers([]);
+        setRerolledDefenders([]);
+        setPlayedAttackers([]);
+        setPlayedDefenders([]);
     };
 
     const handleSaveWeights = () => {

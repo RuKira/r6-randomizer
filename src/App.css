@@ -273,7 +273,7 @@ body, html {
   overflow: hidden;
   display: flex;
   justify-content: center;
-  align-items: start; /* top-center alignment */
+  align-items: start;
 }
 
 .spin-controls {
@@ -309,4 +309,22 @@ body, html {
 .checkbox-inline input {
   margin: 0;
   transform: scale(1.1);
+}
+
+.weight-up {
+  box-shadow: 0 0 8px 3px rgba(0, 255, 0, 0.5);
+}
+
+.weight-down {
+  box-shadow: 0 0 12px 5px rgba(255, 0, 0, 0.8);
+}
+
+.weight-hold {
+  box-shadow: 0 0 8px 3px rgba(255, 255, 0, 0.5); /* yellow */
+}
+
+.weight-up,
+.weight-down,
+.weight-hold {
+  transition: box-shadow 0.8s ease;
 }
