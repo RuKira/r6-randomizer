@@ -8,6 +8,8 @@ function OperatorRandomizerUI() {
     const [chosenDefenders, setChosenDefenders] = useState([]);
     const STORAGE_KEY = "r6-randomizer-preset";
     const [feedback, setFeedback] = useState("");
+    const [lockedAttackers, setLockedAttackers] = useState([]);
+    const [lockedDefenders, setLockedDefenders] = useState([]);
 
     useEffect(() => {
         const defaultWeight = 10;
@@ -46,6 +48,17 @@ function OperatorRandomizerUI() {
             setDefenders(baseDefenders);
         }
     }, []);
+
+    const toggleLock = (name, role) => {
+        const locked = role === 'attack' ? lockedAttackers : lockedDefenders;
+        const setLocked = role === 'attack' ? setLockedAttackers : setLockedDefenders;
+
+        if (locked.includes(name)) {
+            setLocked(locked.filter(n => n !== name));
+        } else {
+            setLocked([...locked, name]);
+        }
+    };
 
     const toggleOperator = (name, role) => {
         const list = role === 'attack' ? attackers : defenders;
@@ -89,11 +102,12 @@ function OperatorRandomizerUI() {
 
     const removeChosen = (name, role) => {
         const setChosen = role === 'attack' ? setChosenAttackers : setChosenDefenders;
-        const chosenList = role === 'attack' ? chosenAttackers : chosenDefenders;
+        const setLocked = role === 'attack' ? setLockedAttackers : setLockedDefenders;
 
-        const updated = chosenList.filter(op => op.name !== name);
-        setChosen(updated);
-    }
+        setChosen(prev => prev.filter(op => op.name !== name));
+        setLocked(prev => prev.filter(n => n !== name));
+    };
+
 
     const weightedRandom = (list) => {
         const pool = [];
@@ -117,35 +131,50 @@ function OperatorRandomizerUI() {
     };
 
 
-    const applySavedPresetToList = (list, role, preset) => {
-        return list.map(op => ({
-            ...op,
-            enabled: !preset[role].includes(op.name)
-        }));
-    };
+    //const applySavedPresetToList = (list, role, preset) => {
+    //    return list.map(op => ({
+    //        ...op,
+    //        enabled: !preset[role].includes(op.name)
+    //    }));
+    //};
 
     const rollOperators = (role) => {
-        const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (preset) {
-            if (role === 'attack') {
-                setAttackers(prev => {
-                    const updated = applySavedPresetToList(prev, 'attack', preset);
-                    doRoll(updated, setAttackers, setChosenAttackers);
-                    return updated;
-                });
-            } else {
-                setDefenders(prev => {
-                    const updated = applySavedPresetToList(prev, 'defense', preset);
-                    doRoll(updated, setDefenders, setChosenDefenders);
-                    return updated;
-                });
+        const list = role === 'attack' ? attackers : defenders;
+        const setList = role === 'attack' ? setAttackers : setDefenders;
+        const setChosen = role === 'attack' ? setChosenAttackers : setChosenDefenders;
+        const locked = role === 'attack' ? lockedAttackers : lockedDefenders;
+        const chosen = role === 'attack' ? chosenAttackers : chosenDefenders;
+
+        const result = [...chosen.filter(op => locked.includes(op.name))];
+        const usedNames = new Set(result.map(op => op.name));
+
+        while (result.length < 6) {
+            const op = weightedRandom(list);
+            if (op && !usedNames.has(op.name)) {
+                usedNames.add(op.name);
+                result.push(op);
             }
-        } else {
-            const list = role === 'attack' ? attackers : defenders;
-            const setList = role === 'attack' ? setAttackers : setDefenders;
-            const setChosen = role === 'attack' ? setChosenAttackers : setChosenDefenders;
-            doRoll(list, setList, setChosen);
         }
+
+        const updatedList = list.map(op => {
+            if (!op.enabled) return op;
+            if (usedNames.has(op.name)) {
+                return { ...op, weight: Math.max(1, op.weight - 1) };
+            } else {
+                return { ...op, weight: op.weight + 1 };
+            }
+        });
+
+        setList(updatedList);
+        setChosen(result);
+        setLockedAttackers([]);
+        setLockedDefenders([]);
+
+    };
+
+    const handleRollBoth = () => {
+        rollOperators('attack');
+        rollOperators('defense');
     };
 
     const resetAll = () => {
@@ -162,6 +191,9 @@ function OperatorRandomizerUI() {
 
         setChosenAttackers([]);
         setChosenDefenders([]);
+        setLockedAttackers([]);
+        setLockedDefenders([]);
+
     };
 
 
@@ -180,20 +212,36 @@ function OperatorRandomizerUI() {
         </div>
     );
 
-    const renderChosen = (list, role) => (
-        <div className="chosen-operators">
-            {list.map(op => (
-                <div
-                    key={op.name}
-                    className="chosen-icon"
-                    onClick={() => removeChosen(op.name, role)}
-                    title="Click to remove"
-                >
-                    <img src={op.image} alt={op.name} />
-                </div>
-            ))}
-        </div>
-    );
+    const renderChosen = (list, role) => {
+        const lockedList = role === 'attack' ? lockedAttackers : lockedDefenders;
+        const toggle = (name) => toggleLock(name, role);
+
+        return (
+            <div className="chosen-operators">
+                {list.map(op => (
+                    <div
+                        key={op.name}
+                        className="chosen-icon"
+                        onClick={() => removeChosen(op.name, role)}
+                        title={lockedList.includes(op.name) ? "Locked – click to remove" : "Click to remove"}
+                    >
+                        <img src={op.image} alt={op.name} />
+                        <span
+                            className="lock-icon"
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent parent click
+                                toggle(op.name);
+                            }}
+                            title={lockedList.includes(op.name) ? "Unlock" : "Lock"}
+                        >
+                        {lockedList.includes(op.name) ? "🔒" : "🔓"}
+                    </span>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
 
     const saveDisabledOperators = (attackers, defenders, includeWeights = false) => {
         const data = {
@@ -240,32 +288,36 @@ function OperatorRandomizerUI() {
         setDefenders(resetDefense);
         saveDisabledOperators(resetAttack, resetDefense); // Save the new default state
         showFeedback("Default preset applied & saved!");
+
+        setLockedAttackers([]);
+        setLockedDefenders([]);
+
     };
 
-    const doRoll = (list, setList, setChosen) => {
-        const chosen = [];
-        const usedNames = new Set();
-
-        while (chosen.length < 6) {
-            const op = weightedRandom(list);
-            if (op && !usedNames.has(op.name)) {
-                usedNames.add(op.name);
-                chosen.push(op);
-            }
-        }
-
-        const updatedList = list.map(op => {
-            if (!op.enabled) return op;
-            if (usedNames.has(op.name)) {
-                return { ...op, weight: Math.max(1, op.weight - 1) };
-            } else {
-                return { ...op, weight: op.weight + 1 };
-            }
-        });
-
-        setList(updatedList);
-        setChosen(chosen);
-    };
+    //const doRoll = (list, setList, setChosen) => {
+    //    const chosen = [];
+    //    const usedNames = new Set();
+//
+    //    while (chosen.length < 6) {
+    //        const op = weightedRandom(list);
+    //        if (op && !usedNames.has(op.name)) {
+    //            usedNames.add(op.name);
+    //            chosen.push(op);
+    //        }
+    //    }
+//
+    //    const updatedList = list.map(op => {
+    //        if (!op.enabled) return op;
+    //        if (usedNames.has(op.name)) {
+    //            return { ...op, weight: Math.max(1, op.weight - 1) };
+    //        } else {
+    //            return { ...op, weight: op.weight + 1 };
+    //        }
+    //    });
+//
+    //    setList(updatedList);
+    //    setChosen(chosen);
+    //};
 
     const handleSaveWeights = () => {
         saveDisabledOperators(attackers, defenders, true);
@@ -283,7 +335,7 @@ function OperatorRandomizerUI() {
                 {renderGrid(attackers, 'attack')}
             </div>
             <div className="buttons-area">
-                <button onClick={() => { rollOperators('attack'); rollOperators('defense'); }}>SPIN OPERATORS</button>
+                <button onClick={handleRollBoth}>SPIN OPERATORS</button>
                 <button onClick={resetAll}>RESET ALL</button>
                 <button onClick={handleSavePreset}>SAVE SELECTION</button>
                 <button onClick={handleSaveWeights}>SAVE WEIGHTS</button>
