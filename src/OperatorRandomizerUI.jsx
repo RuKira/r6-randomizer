@@ -202,45 +202,53 @@ function OperatorRandomizerUI() {
             {list.map(op => (
                 <div
                     key={op.name}
+                    title={op.name}
                     className={`op-icon ${op.enabled ? '' : 'disabled'}`}
                     onClick={() => toggleOperator(op.name, role)}
                 >
-                    <span className="op-weight">{op.weight}</span>
+                <span className="op-weight">{op.weight}</span>
                     <img src={op.image} alt={op.name} />
                 </div>
             ))}
         </div>
     );
 
+    const rerollOperator = (name, role) => {
+        const list = role === 'attack' ? attackers : defenders;
+        const setChosen = role === 'attack' ? setChosenAttackers : setChosenDefenders;
+        const chosenList = role === 'attack' ? chosenAttackers : chosenDefenders;
+
+        const filtered = chosenList.filter(op => op.name !== name);
+        const usedNames = new Set(filtered.map(op => op.name));
+        const candidates = list.filter(op => op.enabled && !usedNames.has(op.name));
+
+        const replacement = weightedRandom(candidates);
+        const newChosen = replacement ? [...filtered, replacement] : filtered;
+
+        setChosen(newChosen);
+    };
+
     const renderChosen = (list, role) => {
         const lockedList = role === 'attack' ? lockedAttackers : lockedDefenders;
-        const toggle = (name) => toggleLock(name, role);
 
         return (
             <div className="chosen-operators">
                 {list.map(op => (
-                    <div
-                        key={op.name}
-                        className="chosen-icon"
-                        onClick={() => removeChosen(op.name, role)}
-                        title={lockedList.includes(op.name) ? "Locked – click to remove" : "Click to remove"}
-                    >
-                        <img src={op.image} alt={op.name} />
-                        <span
-                            className="lock-icon"
-                            onClick={(e) => {
-                                e.stopPropagation(); // Prevent parent click
-                                toggle(op.name);
-                            }}
-                            title={lockedList.includes(op.name) ? "Unlock" : "Lock"}
-                        >
-                        {lockedList.includes(op.name) ? "🔒" : "🔓"}
-                    </span>
+                    <div key={op.name} className="chosen-icon">
+                        <img src={op.image} alt={op.name} title={op.name} />
+                        <div className="chosen-buttons">
+                            <button onClick={() => rerollOperator(op.name, role)} title="Reroll">🔁</button>
+                            <button onClick={() => toggleLock(op.name, role)} title={lockedList.includes(op.name) ? "Unlock" : "Lock"}>
+                                {lockedList.includes(op.name) ? "🔒" : "🔓"}
+                            </button>
+                            <button onClick={() => removeChosen(op.name, role)} title="Played">✅</button>
+                        </div>
                     </div>
                 ))}
             </div>
         );
     };
+
 
 
     const saveDisabledOperators = (attackers, defenders, includeWeights = false) => {
