@@ -28,7 +28,7 @@ A sleek, customizable Rainbow Six Siege Operator Randomizer UI for local or GitH
     - Color-coded state borders:
         - 🟡 Gold for **Locked**
         - 🔵 Blue for **Rerolled**
-        - ⚪ Gray for **Played**
+        - 🟢 Green for **Played**
     - 7-wide grid layout with large, readable icons
 
 ## 📦 Getting Started
@@ -76,11 +76,9 @@ r6-randomizer/
 │   └── images/operators/    # Operator icons (.png)
 │
 ├── src/
-│   ├── App.jsx              # Main component
-│   ├── index.jsx            # Entry point
-│   └── App.css              # UI styles
+│   ├── OperatorRandomizerUI.jsx  # Main component
+│   └── App.css                   # UI styles
 │
-├── docs/                    # GitHub Pages output (from build)
 ├── .github/workflows/       # GitHub Actions for deployment
 ├── package.json
 ├── vite.config.js
