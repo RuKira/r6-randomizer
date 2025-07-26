@@ -116,14 +116,30 @@ body, html {
 
 .chosen-icon {
   width: 120px;
-  border: 2px solid #888;
+  height: 120px;
+  border: 3px solid #888;
   border-radius: 6px;
   background-color: #1a1a1a;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6px;
-  box-sizing: border-box;
+  justify-content: center;
+  position: relative;
+  transition: border 0.2s ease;
+}
+
+.chosen-icon.locked {
+  border-color: gold;
+}
+
+.chosen-icon.rerolled {
+  border-color: dodgerblue;
+}
+
+.chosen-icon.played {
+  border-color: limegreen;
+  opacity: 0;
+  transition: opacity 0.8s ease, border-color 0.3s ease;
 }
 
 .chosen-icon img {
