@@ -50,25 +50,21 @@ npm run dev
 Open http://localhost:5173 to view it in the browser.
 
 ## 🚀 Deployment (GitHub Pages)
-This project is designed to auto-deploy from the main branch using GitHub Actions.
-
-### Deploy manually
-```bash
-npm run build
-```
-Then upload the dist/ (or docs/ if configured) folder to GitHub Pages, or let the included GitHub Action handle it.
 
 ### GitHub Pages config (Vite)
 ```js
-// vite.config.js
 export default defineConfig({
-  base: '/r6-randomizer/',
-  build: {
-    outDir: 'docs'
-  }
+    plugins: [react()],
+    base: '/r6-randomizer/',
 });
-````
-### 📁 Folder Structure
+```
+
+### Deploy manually
+```bash
+npm run deploy
+```
+
+## 📁 Folder Structure
 ```bash
 r6-randomizer/
 │
@@ -79,7 +75,6 @@ r6-randomizer/
 │   ├── OperatorRandomizerUI.jsx  # Main component
 │   └── App.css                   # UI styles
 │
-├── .github/workflows/       # GitHub Actions for deployment
 ├── package.json
 ├── vite.config.js
 └── README.md
