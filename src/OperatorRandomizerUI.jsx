@@ -16,6 +16,7 @@ function OperatorRandomizerUI() {
     const [playedAttackers, setPlayedAttackers] = useState([]);
     const [playedDefenders, setPlayedDefenders] = useState([]);
     const [fadingReroll, setFadingReroll] = useState(null);
+    const [allowDupes, setAllowDupes] = useState(false);
 
 
     useEffect(() => {
@@ -149,7 +150,7 @@ function OperatorRandomizerUI() {
         const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
         const savedDisabled = preset ? preset[role] || [] : [];
 
-        // Re-enable only operators that were temporarily disabled (not in saved preset)
+        // Reset temporary disables
         const cleanedList = list.map(op => {
             if (!op.enabled && !savedDisabled.includes(op.name)) {
                 return { ...op, enabled: true };
@@ -157,18 +158,21 @@ function OperatorRandomizerUI() {
             return op;
         });
 
-        // Set cleaned list before using it
         setList(cleanedList);
 
-        // Continue roll using cleanedList, not stale state
-        const result = [...chosen.filter(op => locked.includes(op.name))];
-        const usedNames = new Set(result.map(op => op.name));
+        // Start with locked choices
+        const lockedOps = chosen.filter(op => locked.includes(op.name));
+        const usedNames = new Set(lockedOps.map(op => op.name));
+        const result = [...lockedOps];
 
         while (result.length < 6) {
             const op = weightedRandom(cleanedList);
-            if (op && !usedNames.has(op.name)) {
-                usedNames.add(op.name);
+
+            if (!op) break; // No more valid options
+
+            if (allowDupes || !usedNames.has(op.name)) {
                 result.push(op);
+                if (!allowDupes) usedNames.add(op.name);
             }
         }
 
@@ -186,11 +190,11 @@ function OperatorRandomizerUI() {
         setChosen(result);
 
         if (role === 'attack') {
-            setLockedAttackers([]);
+            setLockedAttackers(prev => prev.filter(name => usedNames.has(name)));
             setRerolledAttackers(prev => prev.filter(name => !usedNames.has(name)));
             setPlayedAttackers(prev => prev.filter(name => !usedNames.has(name)));
         } else {
-            setLockedDefenders([]);
+            setLockedDefenders(prev => prev.filter(name => usedNames.has(name)));
             setRerolledDefenders(prev => prev.filter(name => !usedNames.has(name)));
             setPlayedDefenders(prev => prev.filter(name => !usedNames.has(name)));
         }
@@ -277,15 +281,18 @@ function OperatorRandomizerUI() {
 
         return (
             <div className="chosen-operators">
-                {list.map(op => (
-                    <div key={op.name} data-name={op.name} className={`chosen-icon
+                {list.map((op, idx) => (
+                    <div
+                        key={`${op.name}-${idx}`} // ✅ UNIQUE key
+                        data-name={op.name}
+                        className={`chosen-icon
                             ${lockedList.includes(op.name) ? 'locked' : ''}
                             ${rerolled.includes(op.name) ? 'rerolled' : ''}
                             ${played.includes(op.name) ? 'played' : ''}
                             ${fadingReroll === op.name ? 'fade-out' : ''}
                         `}
                     >
-                    <img src={op.image} alt={op.name} title={op.name} />
+                        <img src={op.image} alt={op.name} title={op.name} />
                         <div className="chosen-buttons">
                             <button onClick={() => rerollOperator(op.name, role)} title="Reroll">🔁</button>
                             <button onClick={() => toggleLock(op.name, role)} title={lockedList.includes(op.name) ? "Unlock" : "Lock"}>
@@ -369,13 +376,28 @@ function OperatorRandomizerUI() {
                     {renderGrid(attackers, 'attack')}
                 </div>
                 <div className="buttons-area">
-                    <button
-                        onClick={handleRollBoth}
-                        title="Spin 6 random operators for both sides (Attack & Defense)"
-                    >
-                        SPIN OPERATORS
-                    </button>
+                    <div className="spin-controls">
+                        <button
+                            onClick={handleRollBoth}
+                            title="Spin 6 random operators for both sides (Attack & Defense)"
+                        >
+                            SPIN OPERATORS
+                        </button>
 
+                        <label
+                            className="allow-dupes-toggle"
+                            title="Toggle whether duplicate operators can appear in the same roll."
+                            style={{ marginTop: "6px", display: "flex", alignItems: "center", gap: "6px" }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={allowDupes}
+                                onChange={(e) => setAllowDupes(e.target.checked)}
+                            />
+                            Allow Dupes
+                        </label>
+                    </div>
                     <button
                         onClick={resetAll}
                         title="Reset all weights and rerolls, but keep your saved preset (use this to freshen things up)"
