@@ -20,13 +20,8 @@ body, html {
 }
 
 .grid-layout {
-  display: flex;
-  flex-direction: row;
-  align-items: start;
-  justify-content: center;
-  gap: 40px;
-  padding: 20px;
-  box-sizing: border-box;
+  transform-origin: top center;
+  transition: transform 0.2s ease;
 }
 
 .operators-grid {
@@ -125,7 +120,8 @@ body, html {
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: border 0.2s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 1;
 }
 
 .chosen-icon.locked {
@@ -146,6 +142,21 @@ body, html {
   width: 64px;
   height: 64px;
   object-fit: contain;
+}
+
+.chosen-icon.fade-out {
+  animation: fadeAndShrink 0.3s ease forwards;
+}
+
+@keyframes fadeAndShrink {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
 }
 
 .chosen-buttons {
@@ -254,4 +265,13 @@ body, html {
 .tooltip:hover .tooltip-text {
   visibility: visible;
   opacity: 1;
+}
+
+.viewport-scaler {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: start; /* top-center alignment */
 }
