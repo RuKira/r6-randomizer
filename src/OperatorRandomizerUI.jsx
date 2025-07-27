@@ -273,7 +273,7 @@ function OperatorRandomizerUI() {
                     `}
                     onClick={() => toggleOperator(op.name, role)}
                 >
-                <span className="op-weight">{op.weight}</span>
+                    {op.enabled && <span className="op-weight">{op.weight}</span>}
                     <img src={op.image} alt={op.name} />
                 </div>
             ))}
