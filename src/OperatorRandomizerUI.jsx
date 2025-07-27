@@ -47,7 +47,8 @@ function OperatorRandomizerUI() {
             "Thunderbird", "Thorn", "Azami", "Solis", "Fenrir", "Tubarao", "Skopos"
         ];
 
-        const buildOps = (names, role) => names.map(name => ({
+        const buildOps = (names, role) => names.map((name, idx) => ({
+            uid: `${role}-${idx}-${name}`,
             name,
             role,
             weight: 5,
@@ -91,11 +92,14 @@ function OperatorRandomizerUI() {
         );
         setList(updatedList);
 
-        const wasChosen = chosenList.find(op => op.uid === uid);
+        const operator = list.find(op => op.uid === uid);
+        if (!operator) return;
+
+        const wasChosen = chosenList.find(op => op.name === operator.name);
         const isNowDisabled = updatedList.find(op => op.uid === uid)?.enabled === false;
 
         if (wasChosen && isNowDisabled) {
-            rerollOperator(uid, role);
+            rerollOperator(wasChosen.uid, role);
         }
     };
 
@@ -156,7 +160,7 @@ function OperatorRandomizerUI() {
         });
 
         const originalList = [...cleanedList];
-        const lockedOps = chosen.filter(op => locked.includes(op.name));
+        const lockedOps = chosen.filter(op => locked.includes(op.uid));
         const result = [...lockedOps.map((op, idx) => ({ ...op, uid: `${op.name}-${idx}` }))];
         const usedNames = new Set(lockedOps.map(op => op.name));
 
@@ -260,14 +264,14 @@ function OperatorRandomizerUI() {
         <div className="grid-operators">
             {list.map(op => (
                 <div
-                    key={op.name}
+                    key={op.uid} // ✅ Use UID instead of name for React key
                     title={op.name}
                     className={`op-icon ${op.enabled ? '' : 'disabled'}
-                        ${weightChanges[op.name] === 'up' ? 'weight-up' : ''}
-                        ${weightChanges[op.name] === 'down' ? 'weight-down' : ''}
-                        ${weightChanges[op.name] === 'hold' ? 'weight-hold' : ''}
-                    `}
-                    onClick={() => toggleOperator(op.uid, role)}
+                    ${weightChanges[op.uid] === 'up' ? 'weight-up' : ''}
+                    ${weightChanges[op.uid] === 'down' ? 'weight-down' : ''}
+                    ${weightChanges[op.uid] === 'hold' ? 'weight-hold' : ''}
+                `}
+                    onClick={() => toggleOperator(op.uid, role)} // ✅ UID-based toggle
                 >
                     {op.enabled && <span className="op-weight">{op.weight}</span>}
                     <img src={op.image} alt={op.name} />
@@ -361,7 +365,8 @@ function OperatorRandomizerUI() {
         return ops.map(op => ({
             ...op,
             enabled: !preset[role].includes(op.name),
-            weight: weightsMap.has(op.name) ? weightsMap.get(op.name) : 5
+            weight: weightsMap.has(op.name) ? weightsMap.get(op.name) : 5,
+            uid: op.uid ?? `${op.role}-${op.name}`
         }));
     };
 
