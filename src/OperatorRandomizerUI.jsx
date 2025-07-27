@@ -72,14 +72,14 @@ function OperatorRandomizerUI() {
         return () => window.removeEventListener('resize', scaleLayout);
     }, []);
 
-    const toggleLock = (name, role) => {
+    const toggleLock = (uid, role) => {
         const locked = role === 'attack' ? lockedAttackers : lockedDefenders;
         const setLocked = role === 'attack' ? setLockedAttackers : setLockedDefenders;
 
-        if (locked.includes(name)) {
-            setLocked(locked.filter(n => n !== name));
+        if (locked.includes(uid)) {
+            setLocked(locked.filter(id => id !== uid));
         } else {
-            setLocked([...locked, name]);
+            setLocked([...locked, uid]);
         }
     };
 
@@ -101,24 +101,23 @@ function OperatorRandomizerUI() {
         }
     };
 
-    const removeChosen = (name, role) => {
+    const removeChosen = (uid, role) => {
         if (role === 'attack') {
-            setPlayedAttackers(prev => [...prev, name]);
+            setPlayedAttackers(prev => [...prev, uid]);
 
             setTimeout(() => {
-                setChosenAttackers(prev => prev.filter(op => op.name !== name));
-                setPlayedAttackers(prev => prev.filter(n => n !== name));
+                setChosenAttackers(prev => prev.filter(op => op.uid !== uid));
+                setPlayedAttackers(prev => prev.filter(id => id !== uid));
             }, 800);
         } else {
-            setPlayedDefenders(prev => [...prev, name]);
+            setPlayedDefenders(prev => [...prev, uid]);
 
             setTimeout(() => {
-                setChosenDefenders(prev => prev.filter(op => op.name !== name));
-                setPlayedDefenders(prev => prev.filter(n => n !== name));
+                setChosenDefenders(prev => prev.filter(op => op.uid !== uid));
+                setPlayedDefenders(prev => prev.filter(id => id !== uid));
             }, 800);
         }
     };
-
 
     const weightedRandom = (list) => {
         const pool = [];
@@ -162,7 +161,7 @@ function OperatorRandomizerUI() {
         // Start with locked choices
         const originalList = [...cleanedList];
         const lockedOps = chosen.filter(op => locked.includes(op.name));
-        const result = [...lockedOps];
+        const result = [...lockedOps.map((op, idx) => ({ ...op, uid: `${op.name}-${idx}` }))];
         const usedNames = new Set(lockedOps.map(op => op.name));
 
         while (result.length < 6) {
@@ -173,7 +172,7 @@ function OperatorRandomizerUI() {
             const op = weightedRandom(pool);
             if (!op) break;
 
-            result.push(op);
+            result.push({ ...op, uid: `${op.name}-${result.length}` });
             usedNames.add(op.name);
 
             cleanedList = cleanedList.map(o => {
@@ -281,37 +280,33 @@ function OperatorRandomizerUI() {
         </div>
     );
 
-    const rerollOperator = (name, role) => {
+    const rerollOperator = (uid, role) => {
         const setChosen = role === 'attack' ? setChosenAttackers : setChosenDefenders;
         const setRerolled = role === 'attack' ? setRerolledAttackers : setRerolledDefenders;
         const chosenList = role === 'attack' ? chosenAttackers : chosenDefenders;
         const list = role === 'attack' ? attackers : defenders;
 
-        setFadingReroll(name);
+        setFadingReroll(uid);
 
         setTimeout(() => {
-            const filtered = chosenList.filter(op => op.name !== name);
+            const filtered = chosenList.filter(op => op.uid !== uid);
             const usedNames = new Set(filtered.map(op => op.name));
             const candidates = list.filter(op => op.enabled && !usedNames.has(op.name));
 
             const replacement = weightedRandom(candidates);
-            const newChosen = replacement ? [...filtered, replacement] : filtered;
+            const newOp = replacement ? { ...replacement, uid } : null;
+
+            const newChosen = newOp ? [...filtered, newOp] : filtered;
 
             setChosen(newChosen);
 
             if (replacement) {
-                setRerolled(prev => {
-                    if (!prev.includes(replacement.name)) {
-                        return [...prev, replacement.name];
-                    }
-                    return prev;
-                });
+                setRerolled(prev => [...new Set([...prev, uid])]);
             }
 
             setFadingReroll(null);
         }, 300);
     };
-
 
     const renderChosen = (list, role) => {
         const lockedList = role === 'attack' ? lockedAttackers : lockedDefenders;
@@ -323,22 +318,21 @@ function OperatorRandomizerUI() {
             <div className="chosen-operators">
                 {list.map((op, idx) => (
                     <div
-                        key={`${op.name}-${idx}`} // ✅ UNIQUE key
-                        data-name={op.name}
+                        key={op.uid || `${op.name}-${idx}`} // use uid if available
                         className={`chosen-icon
-                            ${lockedList.includes(op.name) ? 'locked' : ''}
-                            ${rerolled.includes(op.name) ? 'rerolled' : ''}
-                            ${played.includes(op.name) ? 'played' : ''}
-                            ${fadingReroll === op.name ? 'fade-out' : ''}
+                            ${lockedList.includes(op.uid) ? 'locked' : ''}
+                            ${rerolled.includes(op.uid) ? 'rerolled' : ''}
+                            ${played.includes(op.uid) ? 'played' : ''}
+                            ${fadingReroll === op.uid ? 'fade-out' : ''}
                         `}
                     >
                         <img src={op.image} alt={op.name} title={op.name} />
                         <div className="chosen-buttons">
-                            <button onClick={() => rerollOperator(op.name, role)} title="Reroll">🔁</button>
-                            <button onClick={() => toggleLock(op.name, role)} title={lockedList.includes(op.name) ? "Unlock" : "Lock"}>
-                                {lockedList.includes(op.name) ? "🔒" : "🔓"}
+                            <button onClick={() => rerollOperator(op.uid, role)} title="Reroll">🔁</button>
+                            <button onClick={() => toggleLock(op.uid, role)} title={lockedList.includes(op.uid) ? "Unlock" : "Lock"}>
+                                {lockedList.includes(op.uid) ? "🔒" : "🔓"}
                             </button>
-                            <button onClick={() => removeChosen(op.name, role)} title="Played (Remove)">✅</button>
+                            <button onClick={() => removeChosen(op.uid, role)} title="Played (Remove)">✅</button>
                         </div>
                     </div>
                 ))}
