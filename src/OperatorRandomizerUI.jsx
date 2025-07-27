@@ -23,7 +23,6 @@ function OperatorRandomizerUI() {
     useEffect(() => {
         const baseHeight = 1080;
 
-        // scaling effect
         const scaleLayout = () => {
             const height = window.innerHeight;
             const scale = Math.min(height / baseHeight, 1);
@@ -35,7 +34,6 @@ function OperatorRandomizerUI() {
         scaleLayout();
         window.addEventListener('resize', scaleLayout);
 
-        // preset loading
         const attackerNames = [
             "Striker", "Sledge", "Thatcher", "Ash", "Thermite", "Twitch", "Montagne", "Glaz", "Fuze", "Blitz", "IQ",
             "Buck", "Blackbeard", "Capitao", "Hibana", "Jackal", "Ying", "Zofia", "Dokkaebi",
@@ -83,21 +81,21 @@ function OperatorRandomizerUI() {
         }
     };
 
-    const toggleOperator = (name, role) => {
+    const toggleOperator = (uid, role) => {
         const list = role === 'attack' ? attackers : defenders;
         const setList = role === 'attack' ? setAttackers : setDefenders;
         const chosenList = role === 'attack' ? chosenAttackers : chosenDefenders;
 
         const updatedList = list.map(op =>
-            op.name === name ? { ...op, enabled: !op.enabled } : op
+            op.uid === uid ? { ...op, enabled: !op.enabled } : op
         );
         setList(updatedList);
 
-        const wasChosen = chosenList.find(op => op.name === name);
-        const isNowDisabled = updatedList.find(op => op.name === name)?.enabled === false;
+        const wasChosen = chosenList.find(op => op.uid === uid);
+        const isNowDisabled = updatedList.find(op => op.uid === uid)?.enabled === false;
 
         if (wasChosen && isNowDisabled) {
-            rerollOperator(name, role); // true = from disable
+            rerollOperator(uid, role);
         }
     };
 
@@ -150,7 +148,6 @@ function OperatorRandomizerUI() {
         const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
         const savedDisabled = preset ? preset[role] || [] : [];
 
-        // Re-enable temporarily disabled operators (not in preset)
         let cleanedList = list.map(op => {
             if (!op.enabled && !savedDisabled.includes(op.name)) {
                 return { ...op, enabled: true };
@@ -158,7 +155,6 @@ function OperatorRandomizerUI() {
             return op;
         });
 
-        // Start with locked choices
         const originalList = [...cleanedList];
         const lockedOps = chosen.filter(op => locked.includes(op.name));
         const result = [...lockedOps.map((op, idx) => ({ ...op, uid: `${op.name}-${idx}` }))];
