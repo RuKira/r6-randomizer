@@ -54,7 +54,8 @@ function OperatorRandomizerUI() {
         attackers, setAttackers,
         defenders, setDefenders,
         reloadOperatorsFromPreset
-    } = useOperatorsState();
+    } = useOperatorsState(STORAGE_KEY, attackerNames, defenderNames);
+
 
     const { teamCode, setTeamCode, myName, setMyName, userUID } = useTeamCode();
 

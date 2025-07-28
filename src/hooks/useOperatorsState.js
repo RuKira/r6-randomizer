@@ -22,5 +22,25 @@ export function useOperatorsState(storageKey, attackerNames, defenderNames) {
         }
     }, [attackerNames, defenderNames, storageKey]);
 
-    return { attackers, setAttackers, defenders, setDefenders };
+    const reloadOperatorsFromPreset = (ignoreWeights = false) => {
+        const baseAttackers = buildOpsSafe(attackerNames, 'attack');
+        const baseDefenders = buildOpsSafe(defenderNames, 'defense');
+
+        const saved = JSON.parse(localStorage.getItem(storageKey));
+        if (saved) {
+            setAttackers(loadDisabledOperators(baseAttackers, 'attack', saved, ignoreWeights));
+            setDefenders(loadDisabledOperators(baseDefenders, 'defense', saved, ignoreWeights));
+        } else {
+            setAttackers(baseAttackers);
+            setDefenders(baseDefenders);
+        }
+    };
+
+    return {
+        attackers,
+        setAttackers,
+        defenders,
+        setDefenders,
+        reloadOperatorsFromPreset
+    };
 }
