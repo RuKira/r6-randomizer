@@ -1,0 +1,80 @@
+.grid-layout {
+    transform-origin: top center;
+    transition: transform 0.2s ease;
+}
+
+.operators-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.operators-grid h2 {
+    margin-bottom: 12px;
+}
+
+.grid-operators {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+
+.op-icon {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 6px;
+    cursor: pointer;
+    border-radius: 10px;
+    background-color: #222;
+    border: 2px solid #444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.op-icon img {
+    width: 70px;
+    height: 70px;
+}
+
+.op-icon.disabled {
+    opacity: 0.2;
+}
+
+.op-weight {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: sans-serif;
+    pointer-events: none;
+}
+
+.weight-up {
+    box-shadow: 0 0 8px 3px rgba(0, 255, 0, 0.5);
+}
+
+.weight-down {
+    box-shadow: 0 0 12px 5px rgba(255, 0, 0, 0.8);
+}
+
+.weight-hold {
+    box-shadow: 0 0 8px 3px rgba(255, 255, 0, 0.5); /* yellow */
+}
+
+.weight-up,
+.weight-down,
+.weight-hold {
+    transition: box-shadow 0.8s ease;
+}
+
+.op-icon.placeholder {
+    visibility: hidden;
+    pointer-events: none;
+}
