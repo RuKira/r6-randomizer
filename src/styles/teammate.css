@@ -1,0 +1,87 @@
+.teammates-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px; /* spacing between teammates */
+    margin-top: 16px;
+    border-top: 1px solid #444;
+    padding-top: 12px;
+}
+
+.teammate-group {
+    display: grid;
+    grid-template-columns: repeat(6, 64px);
+    flex-direction: row;
+    gap: 30px;
+    padding: 4px;
+    background: transparent;
+    border-radius: 8px;
+}
+
+.teammate-icon-wrapper {
+    width: 84px;
+    height: 84px;
+    background-color: #1c1c1c;
+    border: 2px solid #333;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: border-color 0.2s;
+}
+
+.teammate-icon-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.teammate-icon-wrapper.locked {
+    border: 2px solid gold;
+    box-shadow: 0 0 6px gold;
+    z-index: 3;
+    position: relative;
+}
+
+.teammate-icon-wrapper.rerolled:not(.locked, .played) {
+    border: 2px solid dodgerblue;
+    box-shadow: 0 0 6px dodgerblue;
+    position: relative;
+    z-index: 1;
+}
+
+.teammate-icon-wrapper.played {
+    border-color: limegreen;
+    z-index: 2;
+    position: relative;
+}
+
+.teammate-name {
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 6px;
+    margin-top: 8px;
+}
+
+.teammate-name input {
+    padding: 3px 6px;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background-color: #111;
+    color: #ddd;
+}
+
+.teammate-display-name {
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: transparent;
+    color: #ccc;
+}
+
+.teammate-divider {
+    width: 100%;
+    height: auto;
+    background-color: #444;
+    margin: 28px 0 12px;
+}
