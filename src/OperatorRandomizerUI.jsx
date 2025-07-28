@@ -25,6 +25,8 @@ function OperatorRandomizerUI() {
     const [teamData, setTeamData] = useState({ attackers: [], defenders: [] });
     const [teammateNames, setTeammateNames] = useState({});
     const [myName, setMyName] = useState(localStorage.getItem("team-username") || "");
+    const [removingAttackers, setRemovingAttackers] = useState([]);
+    const [removingDefenders, setRemovingDefenders] = useState([]);
     const [userUID] = useState(() => {
         const stored = localStorage.getItem("team-user-uid");
         if (stored) return stored;
@@ -38,7 +40,7 @@ function OperatorRandomizerUI() {
 
         const refPath = `teams/${teamCode}/${userUID}/${role}`;
         set(ref(db, refPath), {
-            chosen: (role === 'attack' ? chosenAttackers : chosenDefenders).map(op => op.name),
+            chosen: (role === 'attack' ? chosenAttackers : chosenDefenders).map(op => ({ name: op.name, uid: op.uid })),
             locked: role === 'attack' ? lockedAttackers : lockedDefenders,
             played: role === 'attack' ? playedAttackers : playedDefenders,
             rerolled: role === 'attack' ? rerolledAttackers : rerolledDefenders
@@ -78,13 +80,14 @@ function OperatorRandomizerUI() {
 
                     const roleList = role === 'attack' ? incoming.attackers : incoming.defenders;
 
-                    roleData.chosen.forEach(name => {
+                    roleData.chosen.forEach(op => {
                         roleList.push({
-                            name,
+                            name: op.name,
+                            uid: op.uid,
                             owner: uid,
-                            locked: roleData.locked?.includes(name) ?? false,
-                            rerolled: roleData.rerolled?.includes(name) ?? false,
-                            played: roleData.played?.includes(name) ?? false,
+                            locked: roleData.locked?.includes(op.uid) ?? false,
+                            rerolled: roleData.rerolled?.includes(op.uid) ?? false,
+                            played: roleData.played?.includes(op.uid) ?? false,
                         });
                     });
                 });
@@ -268,22 +271,39 @@ function OperatorRandomizerUI() {
     };
 
     const removeChosen = (uid, role) => {
+        const isTeamView = teamCode && teamData; // this guards team view
+
         if (role === 'attack') {
-            setPlayedAttackers(prev => [...prev, uid]);
+            setPlayedAttackers(prev => [...new Set([...prev, uid])]);
 
-            setTimeout(() => {
-                setChosenAttackers(prev => prev.filter(op => op.uid !== uid));
-                setPlayedAttackers(prev => prev.filter(id => id !== uid));
-            }, 800);
+            if (!isTeamView) {
+                setRemovingAttackers(prev => [...new Set([...prev, uid])]);
+
+                setTimeout(() => {
+                    setChosenAttackers(prev => {
+                        const filtered = prev.filter(op => op.uid !== uid);
+                        return [...filtered]; // force re-render for reorder
+                    });
+                    setRemovingAttackers(prev => prev.filter(id => id !== uid));
+                }, 400);
+            }
         } else {
-            setPlayedDefenders(prev => [...prev, uid]);
+            setPlayedDefenders(prev => [...new Set([...prev, uid])]);
 
-            setTimeout(() => {
-                setChosenDefenders(prev => prev.filter(op => op.uid !== uid));
-                setPlayedDefenders(prev => prev.filter(id => id !== uid));
-            }, 800);
+            if (!isTeamView) {
+                setRemovingDefenders(prev => [...new Set([...prev, uid])]);
+
+                setTimeout(() => {
+                    setChosenDefenders(prev => {
+                        const filtered = prev.filter(op => op.uid !== uid);
+                        return [...filtered]; // force re-render for reorder
+                    });
+                    setRemovingDefenders(prev => prev.filter(id => id !== uid));
+                }, 400);
+            }
         }
-        syncTeamState(role)
+
+        syncTeamState(role);
     };
 
     const weightedRandom = (list) => {
@@ -427,25 +447,43 @@ function OperatorRandomizerUI() {
     };
 
 
-    const renderGrid = (list, role) => (
-        <div className="grid-operators">
-            {list.map(op => (
-                <div
-                    key={op.uid} // ✅ Use UID instead of name for React key
-                    title={op.name}
-                    className={`op-icon ${op.enabled ? '' : 'disabled'}
-                    ${weightChanges[op.uid] === 'up' ? 'weight-up' : ''}
-                    ${weightChanges[op.uid] === 'down' ? 'weight-down' : ''}
-                    ${weightChanges[op.uid] === 'hold' ? 'weight-hold' : ''}
-                `}
-                    onClick={() => toggleOperator(op.uid, role)} // ✅ UID-based toggle
-                >
-                    {op.enabled && <span className="op-weight">{op.weight}</span>}
-                    <img src={op.image} alt={op.name} />
-                </div>
-            ))}
-        </div>
-    );
+    const renderGrid = (list, role) => {
+        const shouldAddPlaceholders = role === 'defense';
+        const placeholders = shouldAddPlaceholders
+            ? Array(7).fill(null).map((_, i) => ({
+                uid: `placeholder-${role}-${i}`,
+                name: "",
+                role,
+                enabled: false,
+                weight: 0,
+                image: "",
+                placeholder: true
+            }))
+            : [];
+
+        const fullList = [...list, ...placeholders];
+
+        return (
+            <div className="grid-operators">
+                {fullList.map(op => (
+                    <div
+                        key={op.uid}
+                        title={op.name}
+                        className={`op-icon ${op.enabled ? '' : 'disabled'}
+                        ${weightChanges[op.uid] === 'up' ? 'weight-up' : ''}
+                        ${weightChanges[op.uid] === 'down' ? 'weight-down' : ''}
+                        ${weightChanges[op.uid] === 'hold' ? 'weight-hold' : ''}
+                        ${op.placeholder ? 'placeholder' : ''}
+                    `}
+                        onClick={() => !op.placeholder && toggleOperator(op.uid, role)}
+                    >
+                        {!op.placeholder && op.enabled && <span className="op-weight">{op.weight}</span>}
+                        {!op.placeholder && <img src={op.image} alt={op.name} />}
+                    </div>
+                ))}
+            </div>
+        );
+    };
 
     const rerollOperator = (uid, role) => {
         const setChosen = role === 'attack' ? setChosenAttackers : setChosenDefenders;
@@ -483,28 +521,36 @@ function OperatorRandomizerUI() {
         const lockedList = role === 'attack' ? lockedAttackers : lockedDefenders;
         const rerolled = role === 'attack' ? rerolledAttackers : rerolledDefenders;
         const played = role === 'attack' ? playedAttackers : playedDefenders;
+        const removing = role === 'attack' ? removingAttackers : removingDefenders;
 
+        const sortedList = [...list].sort((a, b) => {
+            const aPlayed = played.includes(a.uid);
+            const bPlayed = played.includes(b.uid);
+            return aPlayed - bPlayed;
+        });
 
         return (
             <div className="chosen-operators">
-                {list.map((op, idx) => (
+                {sortedList.map((op, idx) => (
                     <div
-                        key={op.uid || `${op.name}-${idx}`} // use uid if available
+                        key={op.uid || `${op.name}-${idx}`}
                         className={`chosen-icon
-                            ${lockedList.includes(op.uid) ? 'locked' : ''}
-                            ${rerolled.includes(op.uid) ? 'rerolled' : ''}
-                            ${played.includes(op.uid) ? 'played' : ''}
-                            ${fadingReroll === op.uid ? 'fade-out' : ''}
-                        `}
+                        ${lockedList.includes(op.uid) ? 'locked' : ''}
+                        ${rerolled.includes(op.uid) ? 'rerolled' : ''}
+                        ${played.includes(op.uid) ? 'played' : ''}
+                        ${(fadingReroll === op.uid || removing.includes(op.uid)) ? 'fade-out' : ''}
+                    `}
                     >
                         <img src={op.image} alt={op.name} title={op.name} />
-                        <div className="chosen-buttons">
-                            <button onClick={() => rerollOperator(op.uid, role)} title="Reroll">🔁</button>
-                            <button onClick={() => toggleLock(op.uid, role)} title={lockedList.includes(op.uid) ? "Unlock" : "Lock"}>
-                                {lockedList.includes(op.uid) ? "🔒" : "🔓"}
-                            </button>
-                            <button onClick={() => removeChosen(op.uid, role)} title="Played (Remove)">✅</button>
-                        </div>
+                        {!played.includes(op.uid) && (
+                            <div className="chosen-buttons">
+                                <button onClick={() => rerollOperator(op.uid, role)} title="Reroll">🔁</button>
+                                <button onClick={() => toggleLock(op.uid, role)} title={lockedList.includes(op.uid) ? "Unlock" : "Lock"}>
+                                    {lockedList.includes(op.uid) ? "🔒" : "🔓"}
+                                </button>
+                                <button onClick={() => removeChosen(op.uid, role)} title="Played (Remove)">✅</button>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
@@ -686,7 +732,7 @@ function OperatorRandomizerUI() {
                 <div className="operators-grid">
                     <h2>Defenders</h2>
                     {renderGrid(defenders, 'defense')}
-                    <div style={{ marginTop: "106px" }}>
+                    <div>
                         {renderTeammateOperators(teamData.defenders)}
                     </div>
                 </div>
