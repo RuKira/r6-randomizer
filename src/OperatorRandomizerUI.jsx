@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { db } from './firebase';
+import { ref, set, onValue, off, update } from "firebase/database";
+import { v4 as uuidv4 } from 'uuid'
 import './App.css';
 
 function OperatorRandomizerUI() {
     const layoutRef = useRef();
+    const STORAGE_KEY = "r6-randomizer-preset";
     const [attackers, setAttackers] = useState([]);
     const [defenders, setDefenders] = useState([]);
     const [chosenAttackers, setChosenAttackers] = useState([]);
     const [chosenDefenders, setChosenDefenders] = useState([]);
-    const STORAGE_KEY = "r6-randomizer-preset";
     const [feedback, setFeedback] = useState("");
     const [lockedAttackers, setLockedAttackers] = useState([]);
     const [lockedDefenders, setLockedDefenders] = useState([]);
@@ -16,8 +19,167 @@ function OperatorRandomizerUI() {
     const [playedAttackers, setPlayedAttackers] = useState([]);
     const [playedDefenders, setPlayedDefenders] = useState([]);
     const [fadingReroll, setFadingReroll] = useState(null);
-    const [allowDupes, setAllowDupes] = useState(false);
+    const [allowDupes, setAllowDupes] = useState(true);
     const [weightChanges, setWeightChanges] = useState({});
+    const [teamCode, setTeamCode] = useState(localStorage.getItem("team-code") || "");
+    const [teamData, setTeamData] = useState({ attackers: [], defenders: [] });
+    const [teammateNames, setTeammateNames] = useState({});
+    const [myName, setMyName] = useState(localStorage.getItem("team-username") || "");
+    const [userUID] = useState(() => {
+        const stored = localStorage.getItem("team-user-uid");
+        if (stored) return stored;
+        const newUID = crypto.randomUUID();
+        localStorage.setItem("team-user-uid", newUID);
+        return newUID;
+    });
+
+    const syncTeamState = useCallback((role) => {
+        if (!teamCode) return;
+
+        const refPath = `teams/${teamCode}/${userUID}/${role}`;
+        set(ref(db, refPath), {
+            chosen: (role === 'attack' ? chosenAttackers : chosenDefenders).map(op => op.name),
+            locked: role === 'attack' ? lockedAttackers : lockedDefenders,
+            played: role === 'attack' ? playedAttackers : playedDefenders,
+            rerolled: role === 'attack' ? rerolledAttackers : rerolledDefenders
+        });
+    }, [
+        teamCode,
+        userUID,
+        chosenAttackers, chosenDefenders,
+        lockedAttackers, lockedDefenders,
+        playedAttackers, playedDefenders,
+        rerolledAttackers, rerolledDefenders
+    ]);
+
+    useEffect(() => {
+        if (!teamCode) return;
+
+        const teamRef = ref(db, `teams/${teamCode}`);
+        onValue(teamRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            const now = Date.now();
+            const updatedNames = {};
+            const incoming = { attackers: [], defenders: [] };
+
+            for (const [uid, entry] of Object.entries(data)) {
+                updatedNames[uid] = entry.name || "";
+
+                if (uid === userUID) continue;
+
+                const lastUpdate = entry.lastUpdated || 0;
+                if (now - lastUpdate > 1000 * 60 * 5) continue;
+
+                ['attack', 'defense'].forEach(role => {
+                    const roleData = entry[role];
+                    if (!roleData?.chosen) return;
+
+                    const roleList = role === 'attack' ? incoming.attackers : incoming.defenders;
+
+                    roleData.chosen.forEach(name => {
+                        roleList.push({
+                            name,
+                            owner: uid,
+                            locked: roleData.locked?.includes(name) ?? false,
+                            rerolled: roleData.rerolled?.includes(name) ?? false,
+                            played: roleData.played?.includes(name) ?? false,
+                        });
+                    });
+                });
+            }
+
+            setTeammateNames(updatedNames);
+            setTeamData(incoming);
+        });
+
+        syncTeamState('attack');
+        syncTeamState('defense');
+
+        return () => off(teamRef);
+    }, [syncTeamState, teamCode, userUID]);
+
+    useEffect(() => {
+        if (teamCode) syncTeamState('attack');
+    }, [chosenAttackers, lockedAttackers, playedAttackers, rerolledAttackers, syncTeamState, teamCode]);
+
+    useEffect(() => {
+        if (teamCode) syncTeamState('defense');
+    }, [chosenDefenders, lockedDefenders, playedDefenders, rerolledDefenders, syncTeamState, teamCode]);
+
+    useEffect(() => {
+        if (!teamCode) return;
+
+        const path = `teams/${teamCode}/${userUID}`;
+        update(ref(db, path), { lastUpdated: Date.now() });
+        const interval = setInterval(() => {
+            update(ref(db, path), { lastUpdated: Date.now() });
+        }, 60000); // refresh every minute
+
+        return () => clearInterval(interval);
+    }, [teamCode, userUID]);
+
+    const renderTeammateOperators = (list) => {
+        const grouped = {};
+        for (const op of list) {
+            if (!grouped[op.owner]) grouped[op.owner] = [];
+            grouped[op.owner].push(op);
+        }
+
+        const teammateUIDs = Object.keys(grouped).slice(0, 4);
+
+        return (
+            <div className="teammates-row">
+                {teammateUIDs.map((uid, index) => (
+                    <div key={uid}>
+                        {/* Divider Between Teammates */}
+                        {index !== 0 && <div className="teammate-divider" />}
+
+                        {/* Teammate Name Input */}
+                        <div className="teammate-name">
+                            {uid === userUID ? (
+                                <input
+                                    type="text"
+                                    value={teammateNames[uid] || ""}
+                                    onChange={(e) => handleNameChange(uid, e.target.value)}
+                                    placeholder="Enter name"
+                                />
+                            ) : (
+                                <div className="teammate-display-name">
+                                    {teammateNames[uid] || "Unnamed"}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Teammate Operator Icons */}
+                        <div className="teammate-group">
+                            {grouped[uid].map((op, idx) => (
+                                <div
+                                    key={idx}
+                                    className={`teammate-icon-wrapper ${op.locked ? 'locked' : ''} ${op.rerolled ? 'rerolled' : ''} ${op.played ? 'played' : ''}`}
+                                    title={op.name}
+                                >
+                                    <img
+                                        src={`images/operators/${op.name.toLowerCase().replace(/[^a-z0-9]/gi, '')}.png`}
+                                        alt={op.name}
+                                        className="teammate-icon"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
+    const handleNameChange = (uid, newName) => {
+        setTeammateNames(prev => ({ ...prev, [uid]: newName }));
+
+        const userRef = ref(db, `teams/${teamCode}/${uid}`);
+        update(userRef, { name: newName });
+    };
 
 
     useEffect(() => {
@@ -47,8 +209,8 @@ function OperatorRandomizerUI() {
             "Thunderbird", "Thorn", "Azami", "Solis", "Fenrir", "Tubarao", "Skopos"
         ];
 
-        const buildOps = (names, role) => names.map((name, idx) => ({
-            uid: `${role}-${idx}-${name}`,
+        const buildOps = (names, role) => names.map((name) => ({
+            uid: `${role}-${name.replace(/[^a-z0-9]/gi, '').toLowerCase()}`,
             name,
             role,
             weight: 5,
@@ -80,6 +242,8 @@ function OperatorRandomizerUI() {
         } else {
             setLocked([...locked, uid]);
         }
+
+        syncTeamState(role)
     };
 
     const toggleOperator = (uid, role) => {
@@ -119,6 +283,7 @@ function OperatorRandomizerUI() {
                 setPlayedDefenders(prev => prev.filter(id => id !== uid));
             }, 800);
         }
+        syncTeamState(role)
     };
 
     const weightedRandom = (list) => {
@@ -223,6 +388,8 @@ function OperatorRandomizerUI() {
             setRerolledDefenders(prev => prev.filter(name => !usedNames.has(name)));
             setPlayedDefenders(prev => prev.filter(name => !usedNames.has(name)));
         }
+
+        syncTeamState(role)
     };
 
     const handleRollBoth = () => {
@@ -304,7 +471,11 @@ function OperatorRandomizerUI() {
                 setRerolled(prev => [...new Set([...prev, uid])]);
             }
 
+            update(ref(db, `teams/${teamCode}/${userUID}`), { lastUpdated: Date.now() });
+
             setFadingReroll(null);
+
+            syncTeamState(role)
         }, 300);
     };
 
@@ -339,8 +510,6 @@ function OperatorRandomizerUI() {
             </div>
         );
     };
-
-
 
     const saveDisabledOperators = (attackers, defenders, includeWeights = false) => {
         const data = {
@@ -402,7 +571,6 @@ function OperatorRandomizerUI() {
         showFeedback("Weights saved to preset!");
     };
 
-
     return (
         <div className="viewport-scaler">
             <div className="grid-layout centered fullscreen">
@@ -412,8 +580,58 @@ function OperatorRandomizerUI() {
                 <div className="operators-grid">
                     <h2>Attackers</h2>
                     {renderGrid(attackers, 'attack')}
+                    <div>
+                        {renderTeammateOperators(teamData.attackers)}
+                    </div>
                 </div>
                 <div className="buttons-area">
+                    <div className="team-link-ui">
+                        <input
+                            title="Enter a team code to share your operator choices with others."
+                            type="text"
+                            placeholder="Enter team code..."
+                            value={teamCode}
+                            onChange={(e) => setTeamCode(e.target.value)}
+                            style={{ padding: "6px", width: "160px" }}
+                        />
+                    </div>
+                    <div>
+                        <input
+                            title="Enter your name to identify yourself in the team."
+                            type="text"
+                            placeholder="Your name..."
+                            value={myName}
+                            onChange={(e) => setMyName(e.target.value)}
+                            style={{ padding: "6px", width: "160px", marginBottom: "6px" }}
+                        />
+                    </div>
+                    <div className="team-code-input">
+                        <button
+                            title="Join a team with a code to share operator choices."
+                            onClick={() => {
+                                localStorage.setItem("team-code", teamCode);
+                                update(ref(db, `teams/${teamCode}/${userUID}`), { name: myName });
+                                localStorage.setItem("team-username", myName);
+                                window.location.reload();
+                            }}
+                            style={{ marginLeft: "6px" }}
+                        >
+                            Join
+                        </button>
+                        <button
+                            title="Generate a new team code to share with others."
+                            onClick={() => {
+                                const newCode = uuidv4().slice(0, 6);
+                                setTeamCode(newCode);
+                                update(ref(db, `teams/${teamCode}/${userUID}`), { name: myName });
+                                localStorage.setItem("team-username", myName);
+                                localStorage.setItem("team-code", newCode);
+                            }}
+                            style={{ marginLeft: "6px" }}
+                        >
+                            Generate
+                        </button>
+                    </div>
                     <div className="spin-controls">
                         <button
                             onClick={handleRollBoth}
@@ -468,6 +686,9 @@ function OperatorRandomizerUI() {
                 <div className="operators-grid">
                     <h2>Defenders</h2>
                     {renderGrid(defenders, 'defense')}
+                    <div style={{ marginTop: "106px" }}>
+                        {renderTeammateOperators(teamData.defenders)}
+                    </div>
                 </div>
                 <div className="chosen-list chosen-right">
                     {renderChosen(chosenDefenders, 'defense')}

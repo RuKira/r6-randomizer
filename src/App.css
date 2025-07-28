@@ -83,7 +83,7 @@ body, html {
   gap: 10px;
   justify-content: center;
   align-items: center;
-  margin: 250px 0;
+  margin: 75px 0;
 }
 
 .buttons-area button {
@@ -328,3 +328,108 @@ body, html {
 .weight-hold {
   transition: box-shadow 0.8s ease;
 }
+
+.teammate-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 64px); /* 5 wide, 64px icons */
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.teammates-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px; /* more space between teammates */
+  margin-top: 16px;
+  border-top: 1px solid #444;
+  padding-top: 12px;
+}
+
+.teammate-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #444;
+  margin: 16px 0;
+}
+
+.teammate-group {
+  display: grid;
+  grid-template-columns: repeat(6, 64px);
+  flex-direction: row;
+  gap: 30px;
+  padding: 4px;
+  background: transparent;
+  border-radius: 8px;
+}
+
+.teammate-icon-wrapper {
+  width: 84px;
+  height: 84px;
+  background-color: #1c1c1c;
+  border: 2px solid #333;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: border-color 0.2s;
+}
+
+.teammate-icon-wrapper.locked {
+  border-color: gold;
+}
+
+.teammate-icon-wrapper.rerolled {
+  border-color: dodgerblue;
+}
+
+.teammate-icon-wrapper.played {
+  border-color: limegreen;
+}
+
+.teammate-icon {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 6px;
+  border-radius: 10px;
+  background-color: #222;
+  border: 2px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.teammate-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #444;
+  margin: 28px 0 12px;
+}
+
+.teammate-name {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.teammate-name input {
+  background-color: #1c1c1c;
+  border: 1px solid #555;
+  color: white;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  width: 100px;
+  text-align: center;
+}
+
+.teammate-display-name {
+  color: #ccc;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+
+
