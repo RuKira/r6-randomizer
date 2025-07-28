@@ -134,6 +134,8 @@ body, html {
 
 .chosen-icon.played {
   border-color: limegreen;
+  pointer-events: none;
+  cursor: default;
   opacity: 0;
   transition: opacity 0.8s ease, border-color 0.3s ease;
 }
@@ -145,7 +147,8 @@ body, html {
 }
 
 .chosen-icon.fade-out {
-  animation: fadeAndShrink 0.3s ease forwards;
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
 }
 
 @keyframes fadeAndShrink {
@@ -381,7 +384,7 @@ body, html {
 }
 
 .teammate-icon-wrapper.rerolled {
-  border-color: dodgerblue;
+  border: 2px solid dodgerblue;
 }
 
 .teammate-icon-wrapper.played {
@@ -431,5 +434,12 @@ body, html {
   margin-bottom: 6px;
 }
 
+.op-icon.placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
 
-
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
