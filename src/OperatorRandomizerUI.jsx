@@ -24,6 +24,7 @@ import { removeChosen, handleSaveWeights, handleSavePreset, handleDefaultPreset 
 // Local Style Imports
 import './styles/buttons.css';
 import './App.css';
+import {analyzeTeamComposition} from "./utils/teamHealthUtils.js";
 
 function OperatorRandomizerUI() {
     // States
@@ -43,7 +44,6 @@ function OperatorRandomizerUI() {
     const [removingAttackers, setRemovingAttackers] = useState([]);
     const [removingDefenders, setRemovingDefenders] = useState([]);
     const [healthCheck, setHealthCheck] = useState({ attackers: [], defenders: [] });
-
 
     // Variables
     const layoutRef = useRef<HTMLDivElement>null;
@@ -137,6 +137,16 @@ function OperatorRandomizerUI() {
 
         return () => window.removeEventListener('resize', scaleLayout);
     }, [layoutRef, setAttackers, setDefenders]);
+
+    useEffect(() => {
+        const fullAttackTeam = [...chosenAttackers, ...(teamData.attackers || [])];
+        const fullDefenseTeam = [...chosenDefenders, ...(teamData.defenders || [])];
+
+        const attackAlerts = analyzeTeamComposition(fullAttackTeam, "attack");
+        const defenseAlerts = analyzeTeamComposition(fullDefenseTeam, "defense");
+
+        setHealthCheck({ attackers: attackAlerts, defenders: defenseAlerts });
+    }, [chosenAttackers, chosenDefenders, teamData]);
 
     // Functions
     const handleReset = () => {
@@ -240,12 +250,6 @@ function OperatorRandomizerUI() {
         <div className="viewport-scaler">
             <div className="grid-layout centered fullscreen">
                 <div className="chosen-list chosen-left">
-                    <div className="health-check-section">
-                        <h3>🩺 Team Health</h3>
-                        <div>
-                            <ul>{healthCheck.attackers.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
-                        </div>
-                    </div>
                     <ChosenOperators
                         list={chosenAttackers}
                         role="attack"
@@ -294,6 +298,11 @@ function OperatorRandomizerUI() {
                         toggleOperator={toggleOperator}
                         weightChanges={weightChanges}
                     />
+                    <div className="team-health-bar">
+                        <div>
+                            <ul>{healthCheck.attackers.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
+                        </div>
+                    </div>
                     <div>
                         <TeammateView
                             teamData={teamData.attackers}
@@ -429,6 +438,11 @@ function OperatorRandomizerUI() {
                         toggleOperator={toggleOperator}
                         weightChanges={weightChanges}
                     />
+                    <div className="team-health-bar">
+                        <div>
+                            <ul>{healthCheck.defenders.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
+                        </div>
+                    </div>
                     <div>
                         <TeammateView
                             teamData={teamData.defenders}
@@ -438,12 +452,6 @@ function OperatorRandomizerUI() {
                     </div>
                 </div>
                 <div className="chosen-list chosen-right">
-                    <div className="health-check-section">
-                        <h3>🩺 Team Health</h3>
-                        <div>
-                            <ul>{healthCheck.defenders.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
-                        </div>
-                    </div>
                     <ChosenOperators
                         list={chosenDefenders}
                         role="defense"

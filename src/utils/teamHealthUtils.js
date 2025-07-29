@@ -15,7 +15,7 @@ export function analyzeTeamComposition(team, side) {
     const alerts = [];
 
     if (side === "attack") {
-        if ((roleCounts["Breach"] || 0) < 2) {
+        if ((roleCounts["Hard-Breach"] || 0) < 2) {
             alerts.push("❌ Not enough Hard Breachers (need 2+)");
         }
         if ((roleCounts["Anti-Gadget"] || 0) < 2) {

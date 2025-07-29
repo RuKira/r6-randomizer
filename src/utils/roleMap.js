@@ -36,11 +36,11 @@ export const operatorRoles = {
     Sentry: ["Intel"],
 
     // Attackers
-    Thermite: ["Breach", "Support"],
-    Hibana: ["Breach", "Front Line"],
-    Ace: ["Breach", "Anti-Gadget"],
+    Thermite: ["Hard-Breach", "Support"],
+    Hibana: ["Hard-Breach", "Front Line"],
+    Ace: ["Hard-Breach", "Anti-Gadget"],
     Ash: ["Breach", "Front Line"],
-    Maverick: ["Breach", "Front Line"],
+    Maverick: ["Hard-Breach", "Front Line"],
     Sledge: ["Anti-Gadget", "Breach"],
     Thatcher: ["Support", "Anti-Gadget"],
     Twitch: ["Intel", "Anti-Gadget"],
