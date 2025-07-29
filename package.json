@@ -11,9 +11,9 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "deploy:major": "npm version major && npm run build && npm run deploy",
-    "deploy:patch": "npm version patch && npm run build && npm run deploy",
-    "deploy:minor": "npm version minor && npm run build && npm run deploy"
+    "deploy:major": "npm version major && npm run deploy",
+    "deploy:patch": "npm version patch && npm run deploy",
+    "deploy:minor": "npm version minor && npm run deploy"
   },
   "dependencies": {
     "firebase": "^12.0.0",
