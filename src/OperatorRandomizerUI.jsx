@@ -1,4 +1,5 @@
 // NPM package imports
+import pkg from '../package.json';
 import { useEffect, useRef, useState } from 'react';
 import { ref, update } from "firebase/database";
 import { v4 as generateUUID } from 'uuid';
@@ -50,6 +51,8 @@ function OperatorRandomizerUI() {
     useLayoutScale(layoutRef);
 
     const STORAGE_KEY = "r6-randomizer-preset";
+
+    const APP_VERSION = `v${pkg.version}`;
 
     const {
         attackers, setAttackers,
@@ -312,6 +315,9 @@ function OperatorRandomizerUI() {
                     </div>
                 </div>
                 <div className="buttons-area">
+                    <div className="version-label">
+                        {APP_VERSION}
+                    </div>
                     <div className="team-link-ui">
                         <input
                             title="Enter a team code to share your operator choices with others."

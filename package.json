@@ -2,7 +2,7 @@
   "name": "r6-randomizer",
   "homepage": "https://RuKira.github.io/r6-randomizer",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "deploy:major": "npm version major && npm run build && npm run deploy",
+    "deploy:patch": "npm version patch && npm run build && npm run deploy",
+    "deploy:minor": "npm version minor && npm run build && npm run deploy"
   },
   "dependencies": {
     "firebase": "^12.0.0",
