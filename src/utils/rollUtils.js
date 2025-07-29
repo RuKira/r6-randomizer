@@ -114,11 +114,13 @@ export const rerollOperator = ({
     const newOp = weightedRandom(pool);
     if (!newOp) return;
 
+    const newUid = `${newOp.name}-${Date.now()}`;
     const updatedChosen = chosen.map(op =>
         op.uid === uid
-            ? { ...newOp, uid: `${newOp.name}-${Date.now()}` }
+            ? { ...newOp, uid: newUid }
             : op
     );
+
 
     const updatedList = list.map(op => {
         if (op.name === oldOp.name) {
@@ -138,7 +140,9 @@ export const rerollOperator = ({
     setChosen(updatedChosen);
     setList(updatedList);
     setWeightChanges(prev => ({ ...prev, ...changes }));
-    setTimeout(() => setWeightChanges({}), 1000);
+    if (setWeightChanges) {
+        setTimeout(() => setWeightChanges({}), 1000);
+    }
 
-    setRerolled(prev => [...prev, uid]);
+    setRerolled(prev => [...prev, newUid]);
 };

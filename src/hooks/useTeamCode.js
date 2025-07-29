@@ -1,5 +1,15 @@
 import { useState } from "react";
 
+/**
+ * @returns {{
+ *   teamCode: string,
+ *   myName: string,
+ *   userUID: string,
+ *   setTeamCode: (code: string) => void,
+ *   setMyName: (name: string) => void
+ * }}
+ */
+
 export function useTeamCode() {
     const [teamCode, setTeamCode] = useState(localStorage.getItem("team-code") || "");
     const [myName, setMyName] = useState(localStorage.getItem("team-username") || "");

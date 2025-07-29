@@ -70,8 +70,9 @@ export function toggleOperator({
                                    setList,
                                    chosenList,
                                    setChosen,
-                                   setWeightChanges,
-                                   allowDupes
+                                   setRerolled,
+                                   allowDupes,
+                                   setWeightChanges
                                }) {
     const clickedOp = list.find(op => op.uid === uid);
     if (!clickedOp) return;
@@ -79,34 +80,52 @@ export function toggleOperator({
     const nameToToggle = clickedOp.name;
     const isCurrentlyEnabled = clickedOp.enabled;
 
+    const rerolledUIDs = [];
+    let updatedChosen = [...chosenList];
+
+    if (isCurrentlyEnabled) {
+        const usedNames = new Set(chosenList.map(op => op.name));
+
+        updatedChosen = chosenList.map(op => {
+            if (op.name !== nameToToggle) return op;
+
+            const pool = list.filter(p =>
+                p.enabled &&
+                (allowDupes || !usedNames.has(p.name)) &&
+                p.name !== nameToToggle
+            );
+
+            const newOp = weightedRandom(pool);
+            if (!newOp) {
+                rerolledUIDs.push(op.uid);
+                return op;
+            }
+
+            const newUid = `${newOp.name}-${Date.now()}`;
+            rerolledUIDs.push(newUid);
+            usedNames.add(newOp.name);
+            return { ...newOp, uid: newUid };
+        });
+
+        setChosen(updatedChosen);
+
+        if (setRerolled && rerolledUIDs.length > 0) {
+            setRerolled(prev => [...prev, ...rerolledUIDs]);
+        }
+    }
+
     const updatedList = list.map(op =>
         op.name === nameToToggle ? { ...op, enabled: !isCurrentlyEnabled } : op
     );
 
-    let updatedChosen = [...chosenList];
-    if (isCurrentlyEnabled) {
-        const usedNames = new Set(chosenList.map(op => op.name));
-        updatedChosen = chosenList.map(op => {
-            if (op.name !== nameToToggle) return op;
-
-            const pool = updatedList.filter(p =>
-                p.enabled &&
-                (allowDupes || !usedNames.has(p.name))
-            );
-
-            const newOp = weightedRandom(pool);
-            if (!newOp) return op;
-
-            usedNames.add(newOp.name);
-            return { ...newOp, uid: `${newOp.name}-${Date.now()}` };
-        });
-
-        setChosen(updatedChosen);
-    }
-
     setList(updatedList);
-    setTimeout(() => setWeightChanges({}), 1000);
+
+    if (setWeightChanges) {
+        setTimeout(() => setWeightChanges({}), 1000);
+    }
 }
+
+
 
 
 
