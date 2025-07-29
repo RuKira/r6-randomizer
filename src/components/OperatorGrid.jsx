@@ -26,9 +26,9 @@ export default function OperatorGrid({ list, role, toggleOperator, weightChanges
                     className={`
                         op-icon
                         ${op.enabled === false ? 'disabled' : ''}
-                        ${weightChanges[op.uid] === 'up' ? 'weight-up' : ''}
-                        ${weightChanges[op.uid] === 'down' ? 'weight-down' : ''}
-                        ${weightChanges[op.uid] === 'hold' ? 'weight-hold' : ''}
+                        ${weightChanges[op.name] === 'up' ? 'weight-up' : ''}
+                        ${weightChanges[op.name] === 'down' ? 'weight-down' : ''}
+                        ${weightChanges[op.name] === 'hold' ? 'weight-hold' : ''}
                         ${op.placeholder ? 'placeholder' : ''}
                     `}
                     onClick={() => !op.placeholder && toggleOperator(op.uid, role)}

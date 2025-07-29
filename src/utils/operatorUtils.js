@@ -70,6 +70,7 @@ export function toggleOperator({
                                    setList,
                                    chosenList,
                                    setChosen,
+                                   setWeightChanges,
                                    allowDupes
                                }) {
     const clickedOp = list.find(op => op.uid === uid);
@@ -81,12 +82,11 @@ export function toggleOperator({
     const updatedList = list.map(op =>
         op.name === nameToToggle ? { ...op, enabled: !isCurrentlyEnabled } : op
     );
-    setList(updatedList);
 
+    let updatedChosen = [...chosenList];
     if (isCurrentlyEnabled) {
         const usedNames = new Set(chosenList.map(op => op.name));
-
-        const updatedChosen = chosenList.map(op => {
+        updatedChosen = chosenList.map(op => {
             if (op.name !== nameToToggle) return op;
 
             const pool = updatedList.filter(p =>
@@ -103,6 +103,9 @@ export function toggleOperator({
 
         setChosen(updatedChosen);
     }
+
+    setList(updatedList);
+    setTimeout(() => setWeightChanges({}), 1000);
 }
 
 
