@@ -1,99 +1,134 @@
 # R6 Operator Randomizer 🎲
 
-A sleek, customizable Rainbow Six Siege Operator Randomizer UI for local or GitHub Pages use. Built with **React** and **Vite**, this app lets players randomize operators with style — and control.
+A stylish, customizable Rainbow Six Siege Operator Randomizer with full team syncing and operator health checking. Built in **React + Vite** and deployed on GitHub Pages.
 
-## 🔧 Features
+---
 
-- 🎯 **Weighted Randomization**  
-  Each operator has a weight (starting at 10). Weights increase if not picked, and decrease if picked, encouraging fair and dynamic selections.
+## 🔥 Core Features
 
-- 🔀 **Reroll System**
-    - Reroll a single operator without affecting others.
-    - Locked operators remain during rerolls.
-    - Played operators are removed with a stylish green fade-out.
+### 🎯 Weighted Randomization
+- All operators have a default weight of 10
+- Weights increase when not selected, decrease when picked
+- Prevents repetition and biases
 
-- 🧩 **Operator Grid Toggle**
-    - Enable/disable operators in the grid to exclude them from randomization.
-    - Automatically rerolls if a selected operator is disabled.
+### 🔀 Smart Rerolling
+- Reroll individual operators without affecting locked ones
+- ✅ Played operators are faded and removed
+- 🔒 Locked operators stay persistent
+- 🌀 Automatically rerolls disabled picks
 
-- 🛠️ **State Persistence**
-    - Save/load disabled operators and weights using localStorage.
-    - Reset to default with a single click.
+### 🎮 Operator Grid
+- Toggle any operator on/off
+- Hover tooltips for names
+- Color-coded states:
+    - 🟡 Locked
+    - 🔵 Rerolled
+    - 🟢 Played
 
-- 🧠 **Smart Rerolling**  
-  Ensures no duplicates and respects locked operators.
+---
 
-- 🎨 **UI & UX**
-    - Tooltip hover for operator names and buttons
-    - Color-coded state borders:
-        - 🟡 Gold for **Locked**
-        - 🔵 Blue for **Rerolled**
-        - 🟢 Green for **Played**
-    - 7-wide grid layout with large, readable icons
+## 👥 Multiplayer Support
+
+### 🔗 Team Link System
+- Share a code to sync your rolls in real time
+- Each teammate sees others' locked/played/rerolled operators
+- Syncs independently for each user under one shared team code
+
+---
+
+## 🧠 Team Health Check
+- Runs after each roll, including synced teammates
+- Uses Ubisoft role tags (e.g. `Breach`, `Intel`, `Support`, `Anti-Entry`, etc.)
+- Shows alerts like:
+    - ❌ Not enough Hard Breachers
+    - ❌ Missing Anti-Gadget coverage
+    - ✅ Balanced Team Setup
+- Dynamically updates across all users
+
+---
+
+## 💾 Persistent Storage
+- Save/load disabled operators and weight settings
+- LocalStorage-based presets
+- Reset to default anytime
+
+---
+
+## 🧱 UI Layout
+- 7-wide grid for easy viewing
+- Full dual-panel layout (Attack/Defense)
+- Sticky buttons for control flow
+- Version tag rendered from `package.json`
+
+---
 
 ## 📦 Getting Started
 
-### 1. Clone the repo
-
+### 1. Clone
 ```bash
 git clone https://github.com/your-username/r6-randomizer.git
 cd r6-randomizer
 ```
-### 2. Install dependencies
+
+### 2. Install
 ```bash
 npm install
 ```
-### 3. Start development server
+
+### 3. Run Dev Server
 ```bash
 npm run dev
 ```
-Open http://localhost:5173 to view it in the browser.
 
-## 🚀 Deployment (GitHub Pages)
+Visit http://localhost:5173 to start rolling.
 
-### GitHub Pages config (Vite)
+---
+
+## 🚀 Deployment
+
+This project uses Vite + GitHub Pages. Customize the `base` in `vite.config.js`:
+
 ```js
 export default defineConfig({
-    plugins: [react()],
-    base: '/r6-randomizer/',
+  base: '/r6-randomizer/',
 });
 ```
 
-### Deploy manually
+Then deploy:
 ```bash
 npm run deploy
 ```
 
-## 📁 Folder Structure
+Or auto-bump version and deploy:
+```bash
+npm run deploy:minor
+```
+
+---
+
+## 📁 Project Structure
+
 ```bash
 r6-randomizer/
 │
 ├── public/
-│   └── images/operators/    # Operator icons (.png)
+│   └── images/operators/         # All operator icons
 │
 ├── src/
-│   ├── OperatorRandomizerUI.jsx  # Main component
-│   └── App.css                   # UI styles
+│   ├── components/               # Grid, teammates, chosen list
+│   ├── hooks/                    # Custom logic (Firebase, scaling, state)
+│   ├── utils/                    # Roll logic, state tracking, presets, roles
+│   ├── styles/                   # CSS: buttons, layout, grid
+│   └── OperatorRandomizerUI.jsx  # Main app component
 │
 ├── package.json
 ├── vite.config.js
 └── README.md
 ```
 
-## 🧠 Operator Logic
-Locked operators stay during reroll.
-
-Played operators are removed after selection (with green highlight).
-
-Disabled operators are grayed out and excluded.
-
-Weights affect likelihood of selection:
-
-+1 if not picked
-
-−1 if picked
+---
 
 ## 🙏 Credits
-Created with 💻 by [RuKira](https://github.com/RuKira)
 
-Assisted by [ChatGPT](https://openai.com/chatgpt) — for code structuring, debugging, and feature brainstorming.
+Built by [RuKira](https://github.com/RuKira)  
+Helped by ChatGPT — for implementation, UI brainstorming, and chaos.
