@@ -1,4 +1,5 @@
 import { weightedRandom } from "./operatorUtils.js";
+import { analyzeTeamComposition } from "./teamHealthUtils.js";
 
 export function rollOperatorsForRole({
                                          role,
@@ -12,7 +13,8 @@ export function rollOperatorsForRole({
                                          setRerolled,
                                          setPlayed,
                                          allowDupes,
-                                         sync
+                                         sync,
+                                         setHealthCheck
                                      }) {
     const STORAGE_KEY = "r6-randomizer-preset";
 
@@ -77,6 +79,12 @@ export function rollOperatorsForRole({
     setRerolled(prev => prev.filter(name => !usedNames.has(name)));
     setPlayed(prev => prev.filter(name => !usedNames.has(name)));
 
+    if (typeof setHealthCheck === "function") {
+        const normalized = role.toLowerCase();
+        const alerts = analyzeTeamComposition(result, normalized);
+        setHealthCheck(prev => ({ ...prev, [normalized === "attack" ? "attackers" : "defenders"]: alerts }));
+    }
+
     if (typeof sync === "function") {
         sync();
     }
@@ -91,7 +99,7 @@ export const rerollOperator = ({
                                    allowDupes,
                                    setWeightChanges,
                                    setRerolled,
-                                   played
+                                   played,
                                }) => {
     const oldOp = chosen.find(op => op.uid === uid);
     if (!oldOp) return;

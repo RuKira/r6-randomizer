@@ -42,6 +42,7 @@ function OperatorRandomizerUI() {
     const [teammateNames, setTeammateNames] = useState({});
     const [removingAttackers, setRemovingAttackers] = useState([]);
     const [removingDefenders, setRemovingDefenders] = useState([]);
+    const [healthCheck, setHealthCheck] = useState({ attackers: [], defenders: [] });
 
 
     // Variables
@@ -166,7 +167,8 @@ function OperatorRandomizerUI() {
             setRerolled: setRerolledAttackers,
             setPlayed: setPlayedAttackers,
             allowDupes,
-            sync: syncAttack
+            sync: syncAttack,
+            setHealthCheck
         });
 
         rollOperatorsForRole({
@@ -181,7 +183,8 @@ function OperatorRandomizerUI() {
             setRerolled: setRerolledDefenders,
             setPlayed: setPlayedDefenders,
             allowDupes,
-            sync: syncDefense
+            sync: syncDefense,
+            setHealthCheck
         });
     };
 
@@ -237,6 +240,12 @@ function OperatorRandomizerUI() {
         <div className="viewport-scaler">
             <div className="grid-layout centered fullscreen">
                 <div className="chosen-list chosen-left">
+                    <div className="health-check-section">
+                        <h3>🩺 Team Health</h3>
+                        <div>
+                            <ul>{healthCheck.attackers.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
+                        </div>
+                    </div>
                     <ChosenOperators
                         list={chosenAttackers}
                         role="attack"
@@ -429,6 +438,12 @@ function OperatorRandomizerUI() {
                     </div>
                 </div>
                 <div className="chosen-list chosen-right">
+                    <div className="health-check-section">
+                        <h3>🩺 Team Health</h3>
+                        <div>
+                            <ul>{healthCheck.defenders.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
+                        </div>
+                    </div>
                     <ChosenOperators
                         list={chosenDefenders}
                         role="defense"
