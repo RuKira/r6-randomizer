@@ -86,58 +86,59 @@ export const rerollOperator = ({
                                    uid,
                                    chosen,
                                    setChosen,
+                                   list,
                                    setList,
                                    allowDupes,
-                                   list,
                                    setWeightChanges,
-                                   setRerolled
+                                   setRerolled,
+                                   played
                                }) => {
-    const index = chosen.findIndex(op => op.uid === uid);
-    const oldOp = chosen[index];
-    if (index === -1 || !oldOp) return;
+    const oldOp = chosen.find(op => op.uid === uid);
+    if (!oldOp) return;
 
-    // Build a pool excluding already chosen names (if no dupes)
+    if (Array.isArray(played) && played.includes(uid)) {
+        return;
+    }
+
     const usedNames = new Set(chosen.map(op => op.name));
-    if (allowDupes) usedNames.delete(oldOp.name); // let this operator's name reroll again
+    if (allowDupes) usedNames.delete(oldOp.name);
 
     const pool = list.filter(op =>
         op.enabled && (allowDupes || !usedNames.has(op.name))
     );
 
+    if (pool.length === 0) {
+        return;
+    }
+
     const newOp = weightedRandom(pool);
     if (!newOp) return;
 
-    const updatedOp = { ...newOp, uid: `${newOp.name}-${Date.now()}` };
+    const updatedChosen = chosen.map(op =>
+        op.uid === uid
+            ? { ...newOp, uid: `${newOp.name}-${Date.now()}` }
+            : op
+    );
 
-    // Replace operator at the same index
-    const newChosen = [...chosen];
-    newChosen[index] = updatedOp;
-    setChosen(newChosen);
-
-    // Adjust weights
     const updatedList = list.map(op => {
-        if (op.name === newOp.name) {
-            return { ...op, weight: Math.max(1, op.weight - 5) };
-        }
         if (op.name === oldOp.name) {
             return { ...op, weight: Math.min(15, op.weight + 2) };
+        }
+        if (op.name === newOp.name) {
+            return { ...op, weight: Math.max(1, op.weight - 5) };
         }
         return op;
     });
 
-    setList(updatedList);
-
-    // Show weight change arrows briefly
     const changes = {
         [oldOp.name]: 'up',
         [newOp.name]: 'down'
     };
+
+    setChosen(updatedChosen);
+    setList(updatedList);
     setWeightChanges(prev => ({ ...prev, ...changes }));
     setTimeout(() => setWeightChanges({}), 1000);
 
-    // Track rerolled operator
-    setRerolled(prev => [
-        ...prev.filter(id => id !== uid),
-        updatedOp.uid
-    ]);
+    setRerolled(prev => [...prev, uid]);
 };

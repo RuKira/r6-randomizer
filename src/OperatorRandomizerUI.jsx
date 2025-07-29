@@ -195,7 +195,8 @@ function OperatorRandomizerUI() {
             setList: isAttack ? setAttackers : setDefenders,
             setWeightChanges,
             allowDupes,
-            setRerolled: isAttack ? setRerolledAttackers : setRerolledDefenders
+            setRerolled: isAttack ? setRerolledAttackers : setRerolledDefenders,
+            played: isAttack ? playedAttackers : playedDefenders
         });
     };
 
@@ -208,7 +209,8 @@ function OperatorRandomizerUI() {
             list: isAttack ? attackers : defenders,
             setList: isAttack ? setAttackers : setDefenders,
             chosenList: isAttack ? chosenAttackers : chosenDefenders,
-            rerollHandler: handleRerollOperator
+            setChosen: isAttack ? setChosenAttackers : setChosenDefenders,
+            allowDupes,
         });
     };
 

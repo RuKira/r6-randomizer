@@ -64,19 +64,46 @@ export const loadDisabledOperators = (ops, role, preset, ignoreWeights = false) 
 
 // ADD COMMENTS TO EXPLAIN THE FUNCTIONALITY
 
-export function toggleOperator({uid, list, setList, chosenList, rerollHandler, role}) {
+export function toggleOperator({
+                                   uid,
+                                   list,
+                                   setList,
+                                   chosenList,
+                                   setChosen,
+                                   allowDupes
+                               }) {
+    const clickedOp = list.find(op => op.uid === uid);
+    if (!clickedOp) return;
+
+    const nameToToggle = clickedOp.name;
+    const isCurrentlyEnabled = clickedOp.enabled;
+
     const updatedList = list.map(op =>
-        op.uid === uid ? { ...op, enabled: !op.enabled } : op
+        op.name === nameToToggle ? { ...op, enabled: !isCurrentlyEnabled } : op
     );
     setList(updatedList);
 
-    const operator = list.find(op => op.uid === uid);
-    if (!operator) return;
+    if (isCurrentlyEnabled) {
+        const usedNames = new Set(chosenList.map(op => op.name));
 
-    const wasChosen = chosenList.find(op => op.name === operator.name);
-    const isNowDisabled = updatedList.find(op => op.uid === uid)?.enabled === false;
+        const updatedChosen = chosenList.map(op => {
+            if (op.name !== nameToToggle) return op;
 
-    if (wasChosen && isNowDisabled) {
-        rerollHandler(wasChosen.uid, role);
+            const pool = updatedList.filter(p =>
+                p.enabled &&
+                (allowDupes || !usedNames.has(p.name))
+            );
+
+            const newOp = weightedRandom(pool);
+            if (!newOp) return op;
+
+            usedNames.add(newOp.name);
+            return { ...newOp, uid: `${newOp.name}-${Date.now()}` };
+        });
+
+        setChosen(updatedChosen);
     }
 }
+
+
+
