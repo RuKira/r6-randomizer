@@ -12,8 +12,6 @@ export function analyzeTeamComposition(team, side) {
         });
     });
 
-    console.log(`[${side}] Role Counts:`, roleCounts); // 🔍 debug output
-
     const alerts = [];
 
     if (side === "attack") {
