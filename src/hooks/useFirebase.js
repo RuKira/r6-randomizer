@@ -2,13 +2,13 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDQamUkq4a-oMZcjpHHHWUBrRkvNF5f65Y",
-    authDomain: "teamlinkr6randomizer.firebaseapp.com",
-    databaseURL: "https://teamlinkr6randomizer-default-rtdb.firebaseio.com/",
-    projectId: "teamlinkr6randomizer",
-    storageBucket: "teamlinkr6randomizer.firebasestorage.app",
-    messagingSenderId: "498965420629",
-    appId: "1:498965420629:web:0077760643765f0e9792dc"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);
