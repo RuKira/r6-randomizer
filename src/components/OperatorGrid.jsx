@@ -4,7 +4,7 @@ import '../styles/grid.css';
 
 export default function OperatorGrid({ list, role, toggleOperator, weightChanges }) {
     const placeholders = role === 'defense'
-        ? Array(7).fill(null).map((_, i) => ({
+        ? Array(0).fill(null).map((_, i) => ({
             uid: `placeholder-${role}-${i}`,
             name: "",
             role,
