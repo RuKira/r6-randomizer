@@ -3,6 +3,9 @@ import '../styles/grid.css';
 // ADD COMMENTS TO EXPLAIN THE FUNCTIONALITY
 
 export default function OperatorGrid({ list, role, toggleOperator, weightChanges }) {
+    // Filter out hidden ops (like Wildcard)
+    const visibleList = list.filter(op => !op.hidden);
+
     const placeholders = role === 'defense'
         ? Array(0).fill(null).map((_, i) => ({
             uid: `placeholder-${role}-${i}`,
@@ -15,7 +18,7 @@ export default function OperatorGrid({ list, role, toggleOperator, weightChanges
         }))
         : [];
 
-    const fullList = [...list, ...placeholders];
+    const fullList = [...visibleList, ...placeholders];
 
     return (
         <div className="grid-operators">

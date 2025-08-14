@@ -24,7 +24,7 @@ export function analyzeTeamComposition(team, side) {
     }
 
     if (side === "defense") {
-        if ((roleCounts["Anti-Entry"] || 0) < 2) {
+        if ((roleCounts["Anti-Breach"] || 0) < 2) {
             alerts.push("❌ Not enough Anti-Entry operators (need 2+)");
         }
     }
