@@ -1,19 +1,19 @@
 import { weightedRandom } from "./operatorUtils.js";
 
 export function rollOperatorsForRole({
-                                         role,
-                                         list,
-                                         chosen,
-                                         locked,
-                                         setList,
-                                         setChosen,
-                                         setWeightChanges,
-                                         setLocked,
-                                         setRerolled,
-                                         setPlayed,
-                                         allowDupes,
-                                         sync
-                                     }) {
+    role,
+    list,
+    chosen,
+    locked,
+    setList,
+    setChosen,
+    setWeightChanges,
+    setLocked,
+    setRerolled,
+    setPlayed,
+    allowDupes,
+    sync
+}) {
     const STORAGE_KEY = "r6-randomizer-preset";
 
     const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -83,16 +83,16 @@ export function rollOperatorsForRole({
 }
 
 export const rerollOperator = ({
-                                   uid,
-                                   chosen,
-                                   setChosen,
-                                   list,
-                                   setList,
-                                   allowDupes,
-                                   setWeightChanges,
-                                   setRerolled,
-                                   played,
-                               }) => {
+    uid,
+    chosen,
+    setChosen,
+    list,
+    setList,
+    allowDupes,
+    setWeightChanges,
+    setRerolled,
+    played,
+}) => {
     const oldOp = chosen.find(op => op.uid === uid);
     if (!oldOp) return;
 

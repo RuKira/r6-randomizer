@@ -65,7 +65,8 @@
 }
 
 .weight-hold {
-    box-shadow: 0 0 8px 3px rgba(255, 255, 0, 0.5); /* yellow */
+    box-shadow: 0 0 8px 3px rgba(255, 255, 0, 0.5);
+    /* yellow */
 }
 
 .weight-up,

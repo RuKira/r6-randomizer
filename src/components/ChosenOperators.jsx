@@ -4,18 +4,18 @@ import '../styles/chosen.css';
 // ADD COMMENTS TO EXPLAIN THE FUNCTIONALITY
 
 export default function ChosenList({
-                                       list,
-                                       role,
-                                       locked,
-                                       rerolled,
-                                       played,
-                                       fadingReroll,
-                                       removingAttackers,
-                                       removingDefenders,
-                                       rerollOperator,
-                                       toggleLock,
-                                       removeChosen
-                                   }) {
+    list,
+    role,
+    locked,
+    rerolled,
+    played,
+    fadingReroll,
+    removingAttackers,
+    removingDefenders,
+    rerollOperator,
+    toggleLock,
+    removeChosen
+}) {
     const sortedList = [...list].sort((a, b) => {
         const aPlayed = played.includes(a.uid);
         const bPlayed = played.includes(b.uid);
@@ -34,10 +34,10 @@ export default function ChosenList({
                         ${rerolled.includes(op.uid) ? 'rerolled' : ''}
                         ${played.includes(op.uid) ? 'played fade-out' : ''}
                         ${(fadingReroll === op.uid ||
-                        (role === 'attack' && removingAttackers.includes(op.uid)) ||
-                        (role === 'defense' && removingDefenders.includes(op.uid)))
-                        ? 'fade-out'
-                        : ''}
+                            (role === 'attack' && removingAttackers.includes(op.uid)) ||
+                            (role === 'defense' && removingDefenders.includes(op.uid)))
+                            ? 'fade-out'
+                            : ''}
                     `}
                 >
                     <img src={op.image} alt={op.name} title={op.name} />

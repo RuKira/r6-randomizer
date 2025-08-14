@@ -10,7 +10,7 @@ import TeammateView from './components/TeammateDisplay';
 import ChosenOperators from './components/ChosenOperators';
 import OperatorGrid from "./components/OperatorGrid.jsx";
 // Local Hook Imports
-import {useTeamSync} from "./hooks/useTeamSync.js";
+import { useTeamSync } from "./hooks/useTeamSync.js";
 import { useLayoutScale } from "./hooks/useLayoutScale.js";
 import { db } from './hooks/useFirebase.js';
 import { useOperatorsState } from "./hooks/useOperatorsState.js";
@@ -25,7 +25,7 @@ import { removeChosen, handleSaveWeights, handleSavePreset, handleDefaultPreset 
 // Local Style Imports
 import './styles/buttons.css';
 import './App.css';
-import {analyzeTeamComposition} from "./utils/teamHealthUtils.js";
+import { analyzeTeamComposition } from "./utils/teamHealthUtils.js";
 
 function OperatorRandomizerUI() {
     // States
@@ -47,7 +47,7 @@ function OperatorRandomizerUI() {
     const [healthCheck, setHealthCheck] = useState({ attackers: [], defenders: [] });
 
     // Variables
-    const layoutRef = useRef<HTMLDivElement>null;
+    const layoutRef = useRef < HTMLDivElement > null;
     useLayoutScale(layoutRef);
 
     const STORAGE_KEY = "r6-randomizer-preset";
@@ -287,6 +287,8 @@ function OperatorRandomizerUI() {
                                 setRemovingDefenders,
                                 setChosenAttackers,
                                 setChosenDefenders,
+                                setLockedAttackers,
+                                setLockedDefenders,
                                 syncAttack,
                                 syncDefense
                             })
@@ -492,6 +494,8 @@ function OperatorRandomizerUI() {
                                 setRemovingDefenders,
                                 setChosenAttackers,
                                 setChosenDefenders,
+                                setLockedAttackers,
+                                setLockedDefenders,
                                 syncAttack,
                                 syncDefense
                             })

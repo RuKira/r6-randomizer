@@ -5,16 +5,16 @@ import { db } from './useFirebase.js';
 // ADD COMMENT TO EXPLAIN THE FUNCTIONALITY
 
 export const useTeamSync = ({
-                                teamCode,
-                                userUID,
-                                role,
-                                chosen,
-                                locked,
-                                played,
-                                rerolled,
-                                setTeammateNames,
-                                setTeamData
-                            }) => {
+    teamCode,
+    userUID,
+    role,
+    chosen,
+    locked,
+    played,
+    rerolled,
+    setTeammateNames,
+    setTeamData
+}) => {
     const syncTeamState = useCallback(() => {
         if (!teamCode) return;
         const refPath = `teams/${teamCode}/${userUID}/${role}`;

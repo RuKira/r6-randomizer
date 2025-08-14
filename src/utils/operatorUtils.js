@@ -33,18 +33,18 @@ export const buildOps = (names, role) => {
 // ADD COMMENTS TO EXPLAIN THE FUNCTIONALITY
 
 export const weightedRandom = (list) => {
-    const pool = [];
-    for (const op of list) {
-        if (op.enabled) {
-            for (let i = 0; i < op.weight; i++) pool.push(op);
-        }
+  const pool = [];
+  for (const op of list) {
+    if (op.enabled) {
+      for (let i = 0; i < op.weight; i++) pool.push(op);
     }
-    if (pool.length === 0) return null;
-    for (let i = pool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    return pool[0];
+  }
+  if (pool.length === 0) return null;
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool[0];
 };
 
 // ADD COMMENTS TO EXPLAIN THE FUNCTIONALITY
