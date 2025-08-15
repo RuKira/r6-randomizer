@@ -15,8 +15,8 @@ export const removeChosen = ({
     setPlayedDefenders,
     setRemovingAttackers,
     setRemovingDefenders,
-    setLockedAttackers,     // 👈 add
-    setLockedDefenders,     // 👈 add
+    setLockedAttackers,
+    setLockedDefenders,
     syncAttack,
     syncDefense,
 }) => {
@@ -39,7 +39,7 @@ export const removeChosen = ({
         syncAttack();
     } else {
         setPlayedDefenders(prev => [...new Set([...prev, uid])]);
-        setLockedDefenders(prev => prev.filter(id => id !== uid)); // 👈 clear lock
+        setLockedDefenders(prev => prev.filter(id => id !== uid));
 
         if (!isTeamView) {
             setRemovingDefenders(prev => [...new Set([...prev, uid])]);

@@ -58,7 +58,6 @@ export const weightedRandom = (list) => {
  * @param {boolean} saveWeights - if true, also persist weights
  */
 export function saveDisabledOperators(attackers, defenders, saveWeights = false) {
-  // 🚫 Skip hidden ops when collecting disabled names
   const disabledAttack = attackers.filter(op => !op.hidden && !op.enabled).map(op => op.name);
   const disabledDefense = defenders.filter(op => !op.hidden && !op.enabled).map(op => op.name);
 

@@ -80,6 +80,8 @@ function OperatorRandomizerUI() {
         swappableDefense: null,
         setTeammateNames,
         setTeamData,
+        setSwappableAttack,
+        setSwappableDefense,
         setChosenAttackers,
         setLockedAttackers,
         setRerolledAttackers,
@@ -98,6 +100,8 @@ function OperatorRandomizerUI() {
         swappableDefense,
         setTeammateNames,
         setTeamData,
+        setSwappableAttack,
+        setSwappableDefense,
         setChosenDefenders,
         setLockedDefenders,
         setRerolledDefenders,
@@ -250,21 +254,13 @@ function OperatorRandomizerUI() {
     };
 
     const resetAll = () => {
-        reloadOperatorsFromPreset(true);
-        const preset = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        const resetWeights = list => list.map(op => ({ ...op, weight: 5 }));
 
-        if (preset) {
-            setAttackers(prev => loadDisabledOperators(prev, 'attack', preset, true));
-            setDefenders(prev => loadDisabledOperators(prev, 'defense', preset, true));
-        } else {
-            const reset = list => list.map(op => ({ ...op, enabled: true, weight: 5 }));
-            setAttackers(prev => reset(prev));
-            setDefenders(prev => reset(prev));
-        }
+        setAttackers(prev => resetWeights(prev));
+        setDefenders(prev => resetWeights(prev));
 
         handleReset();
     };
-
     return (
         <div className="viewport-scaler">
             <div className="grid-layout centered fullscreen">

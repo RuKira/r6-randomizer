@@ -13,6 +13,8 @@ export const useTeamSync = ({
     rerolled,
     swappableAttack,
     swappableDefense,
+    setSwappableAttack,
+    setSwappableDefense,
     setTeammateNames,
     setTeamData,
     setChosenAttackers,
@@ -117,23 +119,21 @@ export const useTeamSync = ({
                 const newAOp = {
                     name: bOp.name,
                     image: bOp.image || `images/operators/${bOp.name.toLowerCase().replace(/[^a-z0-9]/gi, '')}.png`,
-                    uid: `${bOp.name}-${Date.now()}`
+                    uid: makeUid(bOp)
                 };
 
                 const newBOp = {
                     name: aOp.name,
                     image: aOp.image || `images/operators/${aOp.name.toLowerCase().replace(/[^a-z0-9]/gi, '')}.png`,
-                    uid: `${aOp.name}-${Date.now()}`
+                    uid: makeUid(aOp)
                 };
 
-                const newAChosen = [
-                    ...a.chosen.filter(o => o.uid !== a.opUid),
-                    makeOp(bOp)
-                ];
-                const newBChosen = [
-                    ...b.chosen.filter(o => o.uid !== b.opUid),
-                    makeOp(aOp)
-                ];
+                const newAChosen = a.chosen.map(op =>
+                    op.uid === a.opUid ? makeOp(bOp) : op
+                );
+                const newBChosen = b.chosen.map(op =>
+                    op.uid === b.opUid ? makeOp(aOp) : op
+                );
 
                 updates[`teams/${teamCode}/${a.uid}/${sideKey}/chosen`] = newAChosen;
                 updates[`teams/${teamCode}/${b.uid}/${sideKey}/chosen`] = newBChosen;
@@ -144,32 +144,79 @@ export const useTeamSync = ({
                     console.error(`[Swap] Failed to auto-swap:`, err);
                 });
 
+                // Local updates for current user
                 if (a.uid === userUID) {
                     if (sideKey === 'attack') {
-                        setChosenAttackers(prev => [...prev.filter(op => op.uid !== a.opUid), newAOp]);
-                        setLockedAttackers(prev => prev.filter(uid => uid !== a.opUid));
-                        setRerolledAttackers(prev => prev.filter(uid => uid !== a.opUid));
-                        setPlayedAttackers(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setChosenAttackers === 'function')
+                            setChosenAttackers(prev => {
+                                const index = prev.findIndex(op => op.uid === a.opUid);
+                                if (index === -1) return prev;
+                                const updated = [...prev];
+                                updated[index] = newAOp;
+                                return updated;
+                            });
+                        if (typeof setLockedAttackers === 'function')
+                            setLockedAttackers(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setRerolledAttackers === 'function')
+                            setRerolledAttackers(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setPlayedAttackers === 'function')
+                            setPlayedAttackers(prev => prev.filter(uid => uid !== a.opUid));
                     } else {
-                        setChosenDefenders(prev => [...prev.filter(op => op.uid !== a.opUid), newAOp]);
-                        setLockedDefenders(prev => prev.filter(uid => uid !== a.opUid));
-                        setRerolledDefenders(prev => prev.filter(uid => uid !== a.opUid));
-                        setPlayedDefenders(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setChosenDefenders === 'function')
+                            setChosenDefenders(prev => {
+                                const index = prev.findIndex(op => op.uid === a.opUid);
+                                if (index === -1) return prev;
+                                const updated = [...prev];
+                                updated[index] = newAOp;
+                                return updated;
+                            });
+                        if (typeof setLockedDefenders === 'function')
+                            setLockedDefenders(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setRerolledDefenders === 'function')
+                            setRerolledDefenders(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setPlayedDefenders === 'function')
+                            setPlayedDefenders(prev => prev.filter(uid => uid !== a.opUid));
                     }
                 }
 
                 if (b.uid === userUID) {
                     if (sideKey === 'attack') {
-                        setChosenAttackers(prev => [...prev.filter(op => op.uid !== b.opUid), newBOp]);
-                        setLockedAttackers(prev => prev.filter(uid => uid !== b.opUid));
-                        setRerolledAttackers(prev => prev.filter(uid => uid !== b.opUid));
-                        setPlayedAttackers(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setChosenAttackers === 'function')
+                            setChosenAttackers(prev => {
+                                const index = prev.findIndex(op => op.uid === b.opUid);
+                                if (index === -1) return prev;
+                                const updated = [...prev];
+                                updated[index] = newBOp;
+                                return updated;
+                            });
+                        if (typeof setLockedAttackers === 'function')
+                            setLockedAttackers(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setRerolledAttackers === 'function')
+                            setRerolledAttackers(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setPlayedAttackers === 'function')
+                            setPlayedAttackers(prev => prev.filter(uid => uid !== b.opUid));
                     } else {
-                        setChosenDefenders(prev => [...prev.filter(op => op.uid !== b.opUid), newBOp]);
-                        setLockedDefenders(prev => prev.filter(uid => uid !== b.opUid));
-                        setRerolledDefenders(prev => prev.filter(uid => uid !== b.opUid));
-                        setPlayedDefenders(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setChosenDefenders === 'function')
+                            setChosenDefenders(prev => {
+                                const index = prev.findIndex(op => op.uid === b.opUid);
+                                if (index === -1) return prev;
+                                const updated = [...prev];
+                                updated[index] = newBOp;
+                                return updated;
+                            });
+                        if (typeof setLockedDefenders === 'function')
+                            setLockedDefenders(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setRerolledDefenders === 'function')
+                            setRerolledDefenders(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setPlayedDefenders === 'function')
+                            setPlayedDefenders(prev => prev.filter(uid => uid !== b.opUid));
                     }
+                }
+
+                if (sideKey === 'attack') {
+                    setSwappableAttack(null);
+                } else {
+                    setSwappableDefense(null);
                 }
             };
 

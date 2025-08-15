@@ -29,16 +29,21 @@
 
 .chosen-icon.locked {
     outline: 2px solid gold;
-    box-shadow: 0 0 6px gold;
     z-index: 4;
     position: relative;
 }
 
-.chosen-icon.rerolled:not(.locked) {
+.chosen-icon.rerolled/* priority over rerolled :not(.locked) */{ 
     outline: 2px solid dodgerblue;
-    box-shadow: 0 0 6px dodgerblue;
+    box-shadow: 0 0 10px dodgerblue;
     position: relative;
     z-index: 3;
+}
+
+.chosen-icon.swappable {
+    outline: 2px solid #bc00cc !important;
+    box-sizing: relative;
+    z-index: 2;
 }
 
 .chosen-icon.played {
@@ -48,15 +53,17 @@
     opacity: 0;
     transition: opacity 0.8s ease, border-color 0.3s ease;
     position: relative;
-    z-index: 2;
-}
-
-.chosen-icon.swappable {
-    outline: 2px solid #bc00cc;
-    box-shadow: 0 0 0 2px #bc00cc inset;
-    box-sizing: relative;
     z-index: 1;
 }
+
+.chosen-icon.played button {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.chosen-icon.played img {
+  pointer-events: none;
+}
+
 
 .chosen-icon.fade-out {
     opacity: 0;

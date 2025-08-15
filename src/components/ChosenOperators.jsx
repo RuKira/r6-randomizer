@@ -61,26 +61,27 @@ export default function ChosenList({
 							src={op.image}
 							alt={op.name}
 							title={op.name}
-							onClick={() => onPickForSwap(op.uid)}
+							onClick={() => !isPlayed && onPickForSwap(op.uid)}
 						/>
-						{!isPlayed && (
-							<div className="chosen-buttons">
-								<button
-									onClick={() => rerollOperator(op.uid, role)}
-									title="Reroll"
-								>🔁</button>
-								<button
-									onClick={() => toggleLock(op.uid, role)}
-									title={isLocked ? "Unlock" : "Lock"}
-								>
-									{isLocked ? "🔓" : "🔒"}
-								</button>
-								<button
-									onClick={() => removeChosen(op.uid, role)}
-									title="Played (Remove)"
-								>✅</button>
-							</div>
-						)}
+						<div className="chosen-buttons">
+							<button
+								onClick={(e) => { e.stopPropagation(); rerollOperator(op.uid, role); }}
+								title="Reroll"
+								disabled={isPlayed}
+							>🔁</button>
+							<button
+								onClick={(e) => { e.stopPropagation(); toggleLock(op.uid, role); }}
+								title={isLocked ? "Unlock" : "Lock"}
+								disabled={isPlayed}
+							>
+								{isLocked ? "🔓" : "🔒"}
+							</button>
+							<button
+								onClick={(e) => { e.stopPropagation(); removeChosen(op.uid, role); }}
+								title="Played (Remove)"
+								disabled={isPlayed}
+							>✅</button>
+						</div>
 					</div>
 				);
 			})}
