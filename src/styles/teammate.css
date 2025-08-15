@@ -58,6 +58,12 @@
     position: relative;
 }
 
+.teammate-icon-wrapper.swapped {
+    border-color: #bc00cc;
+    z-index: 2;
+    position: relative;
+}
+
 .teammate-name {
     text-align: center;
     font-size: 13px;

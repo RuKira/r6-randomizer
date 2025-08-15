@@ -45,6 +45,9 @@ function OperatorRandomizerUI() {
     const [removingAttackers, setRemovingAttackers] = useState([]);
     const [removingDefenders, setRemovingDefenders] = useState([]);
     const [healthCheck, setHealthCheck] = useState({ attackers: [], defenders: [] });
+    const [swappableAttack, setSwappableAttack] = useState(null);
+    const [swappableDefense, setSwappableDefense] = useState(null);
+
 
     // Variables
     const layoutRef = useRef < HTMLDivElement > null;
@@ -73,30 +76,43 @@ function OperatorRandomizerUI() {
         locked: lockedAttackers,
         played: playedAttackers,
         rerolled: rerolledAttackers,
+        swappableAttack,
+        swappableDefense: null,
         setTeammateNames,
-        setTeamData
+        setTeamData,
+        setChosenAttackers,
+        setLockedAttackers,
+        setRerolledAttackers,
+        setPlayedAttackers,
     });
 
     const { syncTeamState: syncDefense } = useTeamSync({
         teamCode,
         userUID,
         role: 'defense',
-        chosen: chosenDefenders, // ✅ correct list
+        chosen: chosenDefenders,
         locked: lockedDefenders,
         played: playedDefenders,
         rerolled: rerolledDefenders,
+        swappableAttack: null,
+        swappableDefense,
         setTeammateNames,
-        setTeamData
+        setTeamData,
+        setChosenDefenders,
+        setLockedDefenders,
+        setRerolledDefenders,
+        setPlayedDefenders,
     });
+
 
     // Effects
     useEffect(() => {
         if (teamCode) syncAttack();
-    }, [chosenAttackers, lockedAttackers, playedAttackers, rerolledAttackers, syncAttack, teamCode]);
+    }, [chosenAttackers, lockedAttackers, playedAttackers, rerolledAttackers, syncAttack, teamCode, swappableAttack]);
 
     useEffect(() => {
         if (teamCode) syncDefense();
-    }, [chosenDefenders, lockedDefenders, playedDefenders, rerolledDefenders, syncDefense, teamCode]);
+    }, [chosenDefenders, lockedDefenders, playedDefenders, rerolledDefenders, syncDefense, teamCode, swappableDefense]);
 
     useEffect(() => {
         if (!teamCode) return;
@@ -293,6 +309,8 @@ function OperatorRandomizerUI() {
                                 syncDefense
                             })
                         }
+                        swappableUid={swappableAttack}
+                        onPickForSwap={(uid) => setSwappableAttack(prev => prev === uid ? null : uid)}
                     />
                 </div>
                 <div className="operators-grid">
@@ -500,6 +518,8 @@ function OperatorRandomizerUI() {
                                 syncDefense
                             })
                         }
+                        swappableUid={swappableDefense}
+                        onPickForSwap={(uid) => setSwappableDefense(prev => prev === uid ? null : uid)}
                     />
                 </div>
             </div>

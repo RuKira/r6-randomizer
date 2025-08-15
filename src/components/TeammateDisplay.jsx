@@ -31,7 +31,7 @@ export default function TeammateView({ teamData, teammateNames, userUID }) {
                         {grouped[uid].map((op, idx) => (
                             <div
                                 key={idx}
-                                className={`teammate-icon-wrapper ${op.locked ? 'locked' : ''} ${op.rerolled ? 'rerolled' : ''} ${op.played ? 'played' : ''}`}
+                                className={`teammate-icon-wrapper ${op.locked ? 'locked' : ''} ${op.rerolled ? 'rerolled' : ''} ${op.played ? 'played' : ''} ${op.swapped ? 'swapped' : ''}`}
                                 title={op.name}
                             >
                                 <img
