@@ -83,32 +83,51 @@ export default function Overlay() {
                     />
                 ))}
             </div>
-
-            {/* Bottom = teammates */}
-            <div className="overlay-teamview">
+            {/* Bottom = teamview split into attack/defense */}
+            <div className="overlay-teamview overlay-teamview-left">
                 {Object.entries(teamData)
                     .filter(([tid]) => tid !== uid)
                     .map(([tid, player]) => (
                         <div key={tid} className="overlay-teammate">
                             <div className="overlay-teammate-name">{player.name || tid}</div>
                             <div className="overlay-teammate-ops">
-                                {[...(player.attack?.chosen || []), ...(player.defense?.chosen || [])].map(
-                                    (op) => (
-                                        <img
-                                            key={op.uid}
-                                            className={getClasses(
-                                                op,
-                                                player.attack?.chosen?.some((a) => a.uid === op.uid)
-                                                    ? "attack"
-                                                    : "defense",
-                                                player
-                                            )}
-                                            src={getImage(op)}
-                                            alt={op.name}
-                                            title={op.name}
-                                        />
-                                    )
-                                )}
+                                {(player.attack?.chosen || []).map((op) => (
+                                    <img
+                                        key={op.uid}
+                                        className={`overlay-icon
+                                        ${player.attack?.locked?.includes(op.uid) ? "locked" : ""}
+                                        ${player.attack?.rerolled?.includes(op.uid) ? "rerolled" : ""}
+                                        ${player.attack?.played?.includes(op.uid) ? "played" : ""}
+                                        ${player.swappableAttack === op.uid ? "swappable" : ""}`}
+                                        src={getImage(op)}
+                                        alt={op.name}
+                                        title={op.name}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+            </div>
+            <div className="overlay-teamview overlay-teamview-right">
+                {Object.entries(teamData)
+                    .filter(([tid]) => tid !== uid)
+                    .map(([tid, player]) => (
+                        <div key={tid} className="overlay-teammate">
+                            <div className="overlay-teammate-name">{player.name || tid}</div>
+                            <div className="overlay-teammate-ops">
+                                {(player.defense?.chosen || []).map((op) => (
+                                    <img
+                                        key={op.uid}
+                                        className={`overlay-icon
+                                        ${player.defense?.locked?.includes(op.uid) ? "locked" : ""}
+                                        ${player.defense?.rerolled?.includes(op.uid) ? "rerolled" : ""}
+                                        ${player.defense?.played?.includes(op.uid) ? "played" : ""}
+                                        ${player.swappableDefense === op.uid ? "swappable" : ""}`}
+                                        src={getImage(op)}
+                                        alt={op.name}
+                                        title={op.name}
+                                    />
+                                ))}
                             </div>
                         </div>
                     ))}

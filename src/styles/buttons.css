@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&display=swap');
+
 .spin-controls {
     display: flex;
     flex-direction: column;
@@ -7,6 +9,7 @@
 .allow-dupes-toggle {
     color: white;
     font-size: 0.85rem;
+    font-family: "Anonymous Pro", monospace;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -45,6 +48,7 @@
 .buttons-area button {
     padding: 10px 20px;
     font-size: 16px;
+    font-family: "Anonymous Pro", monospace;
     background-color: #333;
     color: white;
     border: none;
@@ -88,6 +92,7 @@
     color: #fff;
     text-align: center;
     font-size: 12px;
+    font-family: "Anonymous Pro", monospace;
     padding: 4px 6px;
     border-radius: 4px;
     position: absolute;

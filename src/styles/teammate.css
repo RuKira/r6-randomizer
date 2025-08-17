@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&display=swap');
+
 .teammates-row {
     display: flex;
     flex-direction: column;
@@ -67,6 +69,7 @@
 .teammate-name {
     text-align: center;
     font-size: 13px;
+    font-family: "Anonymous Pro", monospace;
     margin-bottom: 6px;
     margin-top: 8px;
 }

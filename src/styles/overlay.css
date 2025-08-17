@@ -1,6 +1,4 @@
-body.overlay-mode, html.overlay-mode {
-  background: transparent !important;
-}
+@import url('https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&display=swap');
 
 .overlay-root {
   background: transparent !important;
@@ -44,24 +42,42 @@ body.overlay-mode, html.overlay-mode {
   background: transparent;
 }
 
-.overlay-icon.rerolled  { border: 3px solid dodgerblue; }
-.overlay-icon.swappable { border: 3px solid #bc00cc; }
-.overlay-icon.locked    { border: 3px solid gold; }
-.overlay-icon.played    { border: 3px solid limegreen; }
+.overlay-icon.rerolled {
+  border: 3px solid dodgerblue;
+}
+
+.overlay-icon.swappable {
+  border: 3px solid #bc00cc;
+}
+
+.overlay-icon.locked {
+  border: 3px solid gold;
+}
+
+.overlay-icon.played {
+  border: 3px solid limegreen;
+}
 
 /* TEAMVIEW */
 
+/* Shared teamview style */
 .overlay-teamview {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100vw;
+  position: fixed;
+  top: 10px;
   display: flex;
-  justify-content: center;
-  gap: 16px;
-  padding: 12px;
-  pointer-events: none;
-  background: transparent;
+  flex-direction: column;
+  /* stack vertically */
+  gap: 12px;
+}
+
+.overlay-teamview-left {
+  left: 10px;
+  align-items: flex-start;
+}
+
+.overlay-teamview-right {
+  right: 10px;
+  align-items: flex-end;
 }
 
 .overlay-teammate {
@@ -72,16 +88,23 @@ body.overlay-mode, html.overlay-mode {
 }
 
 .overlay-teammate-name {
-  font-size: 0.8rem;
+  font-size: 14px;
   font-weight: bold;
+  font-family: "Anonymous Pro", monospace;
   color: white;
-  text-shadow: 0 0 4px black;
+  text-shadow:
+    -2px -2px 0 #111,
+    2px -2px 0 #111,
+    -2px 2px 0 #111,
+    2px 2px 0 #111
 }
 
 .overlay-teammate-ops {
   display: flex;
-  gap: 6px;
+  flex-direction: row;
+  gap: 4px;
 }
+
 
 .overlay-teammate-ops img {
   width: 64px;
@@ -89,7 +112,18 @@ body.overlay-mode, html.overlay-mode {
   object-fit: contain;
 }
 
-.overlay-teammate-ops img.rerolled  { border: 2px solid dodgerblue; }
-.overlay-teammate-ops img.swappable { border: 2px solid #bc00cc; }
-.overlay-teammate-ops img.locked    { border: 2px solid gold; }
-.overlay-teammate-ops img.played    { border: 2px solid limegreen; }
+.overlay-teammate-ops img.rerolled {
+  border: 2px solid dodgerblue;
+}
+
+.overlay-teammate-ops img.swappable {
+  border: 2px solid #bc00cc;
+}
+
+.overlay-teammate-ops img.locked {
+  border: 2px solid gold;
+}
+
+.overlay-teammate-ops img.played {
+  border: 2px solid limegreen;
+}

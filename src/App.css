@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&display=swap');
+
 /* default site background */
 body:not(.overlay-mode),
 html:not(.overlay-mode) {
@@ -5,7 +7,7 @@ html:not(.overlay-mode) {
   padding: 0;
   background-color: #111; /* <-- stays for main app */
   color: white;
-  font-family: Arial, sans-serif;
+  font-family: "Anonymous Pro", monospace;
   height: 100%;
   width: 100%;
   overflow: hidden;
@@ -15,6 +17,7 @@ html:not(.overlay-mode) {
 body.overlay-mode,
 html.overlay-mode {
   background: transparent !important;
+  outline: #111;
 }
 
 

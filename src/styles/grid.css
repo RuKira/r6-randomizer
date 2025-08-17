@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&display=swap');
+
 .grid-layout {
     transform-origin: top center;
     transition: transform 0.2s ease;
@@ -52,7 +54,7 @@
     background: rgba(0, 0, 0, 0.6);
     padding: 2px 5px;
     border-radius: 4px;
-    font-family: sans-serif;
+    font-family: "Anonymous Pro", monospace;
     pointer-events: none;
 }
 
