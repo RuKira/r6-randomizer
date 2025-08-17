@@ -33,6 +33,15 @@ export default function Overlay() {
     };
 
     useEffect(() => {
+        document.body.classList.add("overlay-mode");
+        document.documentElement.classList.add("overlay-mode"); // add to <html> too
+        return () => {
+            document.body.classList.remove("overlay-mode");
+            document.documentElement.classList.remove("overlay-mode");
+        };
+    }, []);
+
+    useEffect(() => {
         if (!teamCode || !uid) return;
 
         const refPath = `teams/${teamCode}/${uid}`;

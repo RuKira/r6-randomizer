@@ -1,5 +1,6 @@
-body,
-html {
+/* default site background */
+body:not(.overlay-mode),
+html:not(.overlay-mode) {
   margin: 0;
   padding: 0;
   background-color: #111; /* <-- stays for main app */
@@ -10,8 +11,9 @@ html {
   overflow: hidden;
 }
 
-/* ONLY when overlay is active */
-body.overlay-mode, html.overlay-mode {
+/* overlay mode explicitly transparent */
+body.overlay-mode,
+html.overlay-mode {
   background: transparent !important;
 }
 
