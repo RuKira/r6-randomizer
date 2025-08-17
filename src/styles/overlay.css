@@ -44,7 +44,52 @@ body.overlay-mode, html.overlay-mode {
   background: transparent;
 }
 
-.overlay-icon.locked    { border: 3px solid gold; }
 .overlay-icon.rerolled  { border: 3px solid dodgerblue; }
-.overlay-icon.played    { border: 3px solid limegreen; }
 .overlay-icon.swappable { border: 3px solid #bc00cc; }
+.overlay-icon.locked    { border: 3px solid gold; }
+.overlay-icon.played    { border: 3px solid limegreen; }
+
+/* TEAMVIEW */
+
+.overlay-teamview {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px;
+  pointer-events: none;
+  background: transparent;
+}
+
+.overlay-teammate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.overlay-teammate-name {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 4px black;
+}
+
+.overlay-teammate-ops {
+  display: flex;
+  gap: 6px;
+}
+
+.overlay-teammate-ops img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.overlay-teammate-ops img.rerolled  { border: 2px solid dodgerblue; }
+.overlay-teammate-ops img.swappable { border: 2px solid #bc00cc; }
+.overlay-teammate-ops img.locked    { border: 2px solid gold; }
+.overlay-teammate-ops img.played    { border: 2px solid limegreen; }

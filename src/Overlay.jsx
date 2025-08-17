@@ -11,30 +11,26 @@ export default function Overlay() {
 
     const [attackers, setAttackers] = useState([]);
     const [defenders, setDefenders] = useState([]);
-
-    const [locked, setLocked] = useState({ attack: [], defense: [] });
-    const [rerolled, setRerolled] = useState({ attack: [], defense: [] });
-    const [played, setPlayed] = useState({ attack: [], defense: [] });
-    const [swappableAttack, setSwappableAttack] = useState(null);
-    const [swappableDefense, setSwappableDefense] = useState(null);
+    const [teamData, setTeamData] = useState({});
 
     const getImage = (op) =>
         op.image ||
         `images/operators/${op.name.toLowerCase().replace(/[^a-z0-9]/gi, "")}.png`;
 
-    const getClasses = (op, side) => {
+    const getClasses = (op, side, player) => {
         let cls = "overlay-icon";
-        if (locked[side]?.includes(op.uid)) cls += " locked";
-        if (rerolled[side]?.includes(op.uid)) cls += " rerolled";
-        if (played[side]?.includes(op.uid)) cls += " played";
-        if (side === "attack" && swappableAttack === op.uid) cls += " swappable";
-        if (side === "defense" && swappableDefense === op.uid) cls += " swappable";
+        const pdata = player?.[side];
+        if (pdata?.locked?.includes(op.uid)) cls += " locked";
+        if (pdata?.rerolled?.includes(op.uid)) cls += " rerolled";
+        if (pdata?.played?.includes(op.uid)) cls += " played";
+        if (side === "attack" && player?.swappableAttack === op.uid) cls += " swappable";
+        if (side === "defense" && player?.swappableDefense === op.uid) cls += " swappable";
         return cls;
     };
 
     useEffect(() => {
         document.body.classList.add("overlay-mode");
-        document.documentElement.classList.add("overlay-mode"); // add to <html> too
+        document.documentElement.classList.add("overlay-mode");
         return () => {
             document.body.classList.remove("overlay-mode");
             document.documentElement.classList.remove("overlay-mode");
@@ -43,45 +39,31 @@ export default function Overlay() {
 
     useEffect(() => {
         if (!teamCode || !uid) return;
+        const teamRef = ref(db, `teams/${teamCode}`);
 
-        const refPath = `teams/${teamCode}/${uid}`;
-        const teamRef = ref(db, refPath);
-
-        const unsubscribe = onValue(teamRef, (snapshot) => {
+        const unsub = onValue(teamRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
 
-            setAttackers(data.attack?.chosen || []);
-            setDefenders(data.defense?.chosen || []);
+            setTeamData(data);
+            const me = data[uid];
+            if (!me) return;
 
-            setLocked({
-                attack: data.attack?.locked || [],
-                defense: data.defense?.locked || [],
-            });
-            setRerolled({
-                attack: data.attack?.rerolled || [],
-                defense: data.defense?.rerolled || [],
-            });
-            setPlayed({
-                attack: data.attack?.played || [],
-                defense: data.defense?.played || [],
-            });
-
-            setSwappableAttack(data.swappableAttack || null);
-            setSwappableDefense(data.swappableDefense || null);
+            setAttackers(me.attack?.chosen || []);
+            setDefenders(me.defense?.chosen || []);
         });
 
-        return () => off(teamRef, "value", unsubscribe);
+        return () => off(teamRef, "value", unsub);
     }, [teamCode, uid]);
 
     return (
         <div className="overlay-container">
-            {/* Left column: attackers */}
-            <div className="overlay-column left">
+            {/* Left column = your attackers */}
+            <div className="overlay-column overlay-left">
                 {attackers.map((op) => (
                     <img
                         key={op.uid}
-                        className={getClasses(op, "attack")}
+                        className={getClasses(op, "attack", teamData[uid])}
                         src={getImage(op)}
                         alt={op.name}
                         title={op.name}
@@ -89,17 +71,47 @@ export default function Overlay() {
                 ))}
             </div>
 
-            {/* Right column: defenders */}
-            <div className="overlay-column right">
+            {/* Right column = your defenders */}
+            <div className="overlay-column overlay-right">
                 {defenders.map((op) => (
                     <img
                         key={op.uid}
-                        className={getClasses(op, "defense")}
+                        className={getClasses(op, "defense", teamData[uid])}
                         src={getImage(op)}
                         alt={op.name}
                         title={op.name}
                     />
                 ))}
+            </div>
+
+            {/* Bottom = teammates */}
+            <div className="overlay-teamview">
+                {Object.entries(teamData)
+                    .filter(([tid]) => tid !== uid)
+                    .map(([tid, player]) => (
+                        <div key={tid} className="overlay-teammate">
+                            <div className="overlay-teammate-name">{player.name || tid}</div>
+                            <div className="overlay-teammate-ops">
+                                {[...(player.attack?.chosen || []), ...(player.defense?.chosen || [])].map(
+                                    (op) => (
+                                        <img
+                                            key={op.uid}
+                                            className={getClasses(
+                                                op,
+                                                player.attack?.chosen?.some((a) => a.uid === op.uid)
+                                                    ? "attack"
+                                                    : "defense",
+                                                player
+                                            )}
+                                            src={getImage(op)}
+                                            alt={op.name}
+                                            title={op.name}
+                                        />
+                                    )
+                                )}
+                            </div>
+                        </div>
+                    ))}
             </div>
         </div>
     );
