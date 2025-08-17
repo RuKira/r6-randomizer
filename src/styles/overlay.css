@@ -46,12 +46,12 @@
   border: 3px solid dodgerblue;
 }
 
-.overlay-icon.swappable {
-  border: 3px solid #bc00cc;
-}
-
 .overlay-icon.locked {
   border: 3px solid gold;
+}
+
+.overlay-icon.swappable {
+  border: 3px solid #bc00cc;
 }
 
 .overlay-icon.played {
@@ -116,12 +116,12 @@
   border: 2px solid dodgerblue;
 }
 
-.overlay-teammate-ops img.swappable {
-  border: 2px solid #bc00cc;
-}
-
 .overlay-teammate-ops img.locked {
   border: 2px solid gold;
+}
+
+.overlay-teammate-ops img.swappable {
+  border: 2px solid #bc00cc;
 }
 
 .overlay-teammate-ops img.played {
