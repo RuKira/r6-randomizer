@@ -1,0 +1,36 @@
+body, html, #root {
+  background: transparent !important;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.overlay-container {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%); /* vertical center */
+  display: flex;
+  justify-content: space-between; /* push to edges */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.overlay-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+}
+
+.overlay-icon {
+  width: 64px;
+  height: 64px;
+}
+
+.overlay-icon.locked { border: 3px solid gold; }
+.overlay-icon.rerolled { border: 3px solid dodgerblue; }
+.overlay-icon.played { border: 3px solid limegreen; }
+.overlay-icon.swappable { border: 3px solid #bc00cc; }
