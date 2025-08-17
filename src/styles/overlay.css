@@ -1,36 +1,50 @@
-body, html, #root {
+body.overlay-mode, html.overlay-mode {
   background: transparent !important;
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
+}
+
+.overlay-root {
+  background: transparent !important;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .overlay-container {
   position: fixed;
-  top: 50%;
+  top: 0;
   left: 0;
-  right: 0;
-  transform: translateY(-50%); /* vertical center */
+  width: 100vw;
+  height: 100vh;
   display: flex;
-  justify-content: space-between; /* push to edges */
-  width: 100%;
-  box-sizing: border-box;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
 }
 
 .overlay-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 25px;
+  gap: 12px;
+  padding: 16px;
+}
+
+.overlay-left {
+  margin-left: 16px;
+}
+
+.overlay-right {
+  margin-right: 16px;
 }
 
 .overlay-icon {
   width: 64px;
   height: 64px;
+  object-fit: contain;
+  background: transparent;
 }
 
-.overlay-icon.locked { border: 3px solid gold; }
-.overlay-icon.rerolled { border: 3px solid dodgerblue; }
-.overlay-icon.played { border: 3px solid limegreen; }
+.overlay-icon.locked    { border: 3px solid gold; }
+.overlay-icon.rerolled  { border: 3px solid dodgerblue; }
+.overlay-icon.played    { border: 3px solid limegreen; }
 .overlay-icon.swappable { border: 3px solid #bc00cc; }

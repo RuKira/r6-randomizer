@@ -2,13 +2,19 @@ body,
 html {
   margin: 0;
   padding: 0;
-  background-color: #111;
+  background-color: #111; /* <-- stays for main app */
   color: white;
   font-family: Arial, sans-serif;
   height: 100%;
   width: 100%;
   overflow: hidden;
 }
+
+/* ONLY when overlay is active */
+body.overlay-mode, html.overlay-mode {
+  background: transparent !important;
+}
+
 
 .fullscreen {
   height: 100vh;
