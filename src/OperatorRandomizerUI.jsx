@@ -66,6 +66,8 @@ function OperatorRandomizerUI() {
 
     const { teamCode, setTeamCode, myName, setMyName, userUID } = useTeamCode();
 
+    const [pendingCode, setPendingCode] = useState(teamCode || "");
+
     const { feedback, showFeedback } = useFeedback();
 
     const { syncTeamState: syncAttack } = useTeamSync({
@@ -249,7 +251,8 @@ function OperatorRandomizerUI() {
             setRerolled: isAttack ? setRerolledAttackers : setRerolledDefenders,
             rerollHandler: handleRerollOperator,
             playedList: isAttack ? playedAttackers : playedDefenders,
-            allowDupes
+            allowDupes,
+            setWeightChanges
         });
     };
 
@@ -331,19 +334,17 @@ function OperatorRandomizerUI() {
                     </div>
                 </div>
                 <div className="buttons-area">
-                    <div className="version-label">
-                        {APP_VERSION}
-                    </div>
+                    <div className="version-label">{APP_VERSION}</div>
+
                     <div className="team-link-ui">
                         <input
-                            title="Enter a team code to share your operator choices with others."
                             type="text"
-                            placeholder="Enter team code..."
-                            value={teamCode}
-                            onChange={(e) => setTeamCode(e.target.value)}
-                            style={{ padding: "6px", width: "160px" }}
+                            value={pendingCode}
+                            onChange={(e) => setPendingCode(e.target.value)}
+                            placeholder="Enter team code"
                         />
                     </div>
+
                     <div>
                         <input
                             title="Enter your name to identify yourself in the team."
@@ -354,13 +355,18 @@ function OperatorRandomizerUI() {
                             style={{ padding: "6px", width: "160px", marginBottom: "6px" }}
                         />
                     </div>
+
                     <div className="team-code-input">
                         <button
                             title="Join a team with a code to share operator choices."
                             onClick={() => {
-                                localStorage.setItem("team-code", teamCode);
-                                update(ref(db, `teams/${teamCode}/${userUID}`), { name: myName })
+                                if (!pendingCode.trim()) return;
+
+                                setTeamCode(pendingCode.trim());
+
+                                update(ref(db, `teams/${pendingCode}/${userUID}`), { name: myName })
                                     .catch((err) => console.error("Firebase update failed:", err));
+
                                 localStorage.setItem("team-username", myName);
                                 window.location.reload();
                             }}
@@ -372,11 +378,7 @@ function OperatorRandomizerUI() {
                             title="Generate a new team code to share with others."
                             onClick={() => {
                                 const newCode = generateUUID().slice(0, 6);
-                                setTeamCode(newCode);
-                                update(ref(db, `teams/${teamCode}/${userUID}`), { name: myName })
-                                    .catch((err) => console.error("Firebase update failed:", err));
-                                localStorage.setItem("team-username", myName);
-                                localStorage.setItem("team-code", newCode);
+                                setPendingCode(newCode);
                             }}
                             style={{ marginLeft: "6px" }}
                         >
@@ -519,7 +521,7 @@ function OperatorRandomizerUI() {
                     />
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

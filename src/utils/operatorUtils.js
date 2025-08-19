@@ -99,7 +99,6 @@ export function loadDisabledOperators(list, role, preset, forceEnableAll = false
   const savedWeights = preset?.weights?.[role] || null;
 
   return list.map(op => {
-    // 🚫 Never touch hidden ops — stay enabled and keep their own weight
     if (op.hidden) return op;
 
     const next = {
@@ -126,12 +125,34 @@ export function toggleOperator({
   setChosen,
   setRerolled,
   allowDupes,
-  setWeightChanges
+  setWeightChanges,
+  playedList
 }) {
-  const clickedOp = list.find(op => op.uid === uid);
-  if (!clickedOp) return;
 
-  if (clickedOp.hidden) return;
+  const clickedOp = list.find(op => op.uid === uid);
+  if (!clickedOp) {
+    return;
+  }
+
+  const playedUIDs = new Set(playedList || []);
+  const playedNames = new Set(
+    (playedList || [])
+      .map(idOrOp => {
+        if (typeof idOrOp === "string") {
+          return idOrOp.split("-")[0];
+        }
+        return idOrOp.name;
+      })
+  );
+
+  if (playedUIDs.has(clickedOp.uid) || playedNames.has(clickedOp.name)) {
+    return;
+  }
+
+
+  if (clickedOp.hidden) {
+    return;
+  }
 
   const nameToToggle = clickedOp.name;
   const isCurrentlyEnabled = clickedOp.enabled;

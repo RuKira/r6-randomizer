@@ -29,17 +29,16 @@
     image-rendering: pixelated;
 }
 
-.chosen-icon.locked {
-    outline: 2px solid gold;
-    z-index: 4;
+.chosen-icon.rerolled{ 
+    outline: 2px solid dodgerblue;
     position: relative;
+    z-index: 4;
 }
 
-.chosen-icon.rerolled/* priority over rerolled :not(.locked) */{ 
-    outline: 2px solid dodgerblue;
-    box-shadow: 0 0 10px dodgerblue;
-    position: relative;
+.chosen-icon.locked {
+    outline: 2px solid gold;
     z-index: 3;
+    position: relative;
 }
 
 .chosen-icon.swappable {
@@ -49,7 +48,7 @@
 }
 
 .chosen-icon.played {
-    border-color: limegreen;
+    border-color: 2px solid limegreen;
     pointer-events: none;
     cursor: default;
     opacity: 0;
