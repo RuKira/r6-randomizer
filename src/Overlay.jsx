@@ -87,6 +87,7 @@ export default function Overlay() {
             <div className="overlay-teamview overlay-teamview-left">
                 {Object.entries(teamData)
                     .filter(([tid]) => tid !== uid)
+                    .filter(([_, player]) => (player.attack?.chosen?.length ?? 0) > 0)
                     .map(([tid, player]) => (
                         <div key={tid} className="overlay-teammate">
                             <div className="overlay-teammate-name">{player.name || tid}</div>
@@ -111,6 +112,7 @@ export default function Overlay() {
             <div className="overlay-teamview overlay-teamview-right">
                 {Object.entries(teamData)
                     .filter(([tid]) => tid !== uid)
+                    .filter(([_, player]) => (player.defense?.chosen?.length ?? 0) > 0)
                     .map(([tid, player]) => (
                         <div key={tid} className="overlay-teammate">
                             <div className="overlay-teammate-name">{player.name || tid}</div>
