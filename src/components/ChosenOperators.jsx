@@ -40,7 +40,7 @@ export default function ChosenList({
 
 				let statusClass = '';
 				if (isPlayed) {
-					statusClass = 'played fade-out';
+					statusClass = 'played';
 				} else if (isSwappable) {
 					statusClass = 'swappable';
 				} else if (isLocked) {
@@ -54,7 +54,7 @@ export default function ChosenList({
 						key={op.uid || `${op.name}-${idx}`}
 						className={`chosen-icon 
 							${statusClass}
-              ${(isFading || isRemoving) ? 'fade-out' : ''}
+              ${(isFading || isRemoving) ? '' : ''}
             `}
 					>
 						<img

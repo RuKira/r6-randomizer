@@ -28,7 +28,6 @@ import './App.css';
 import { analyzeTeamComposition } from "./utils/teamHealthUtils.js";
 
 function OperatorRandomizerUI() {
-    console.log("Loaded Correctly! Tutorial Page Soon")
 
     // States
     const [chosenAttackers, setChosenAttackers] = useState([]);

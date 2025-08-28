@@ -128,29 +128,14 @@ export function toggleOperator({
   setWeightChanges,
   playedList
 }) {
-
   const clickedOp = list.find(op => op.uid === uid);
-  if (!clickedOp) {
-    return;
-  }
+  if (!clickedOp) return;
+  if (clickedOp.hidden) return;
 
   const playedUIDs = new Set(playedList || []);
-  const playedNames = new Set(
-    (playedList || [])
-      .map(idOrOp => {
-        if (typeof idOrOp === "string") {
-          return idOrOp.split("-")[0];
-        }
-        return idOrOp.name;
-      })
-  );
 
-  if (playedUIDs.has(clickedOp.uid) || playedNames.has(clickedOp.name)) {
-    return;
-  }
-
-
-  if (clickedOp.hidden) {
+  if (playedUIDs.has(uid)) {
+    console.log("⛔ Blocked toggle/reroll/disable for played operator:", clickedOp.name, uid);
     return;
   }
 
@@ -164,12 +149,18 @@ export function toggleOperator({
     const usedNames = new Set(chosenList.map(op => op.name));
 
     updatedChosen = chosenList.map(op => {
+      if (playedUIDs.has(op.uid)) {
+        return op;
+      }
+
       if (op.name !== nameToToggle) return op;
 
-      const pool = list.filter(p =>
-        p.enabled &&
-        (allowDupes || !usedNames.has(p.name)) &&
-        p.name !== nameToToggle
+      const pool = list.filter(
+        p =>
+          p.enabled &&
+          (allowDupes || !usedNames.has(p.name)) &&
+          p.name !== nameToToggle &&
+          !playedUIDs.has(p.uid)
       );
 
       const newOp = weightedRandom(pool);
@@ -192,7 +183,9 @@ export function toggleOperator({
   }
 
   const updatedList = list.map(op =>
-    op.name === nameToToggle ? { ...op, enabled: !isCurrentlyEnabled } : op
+    op.name === nameToToggle && !playedUIDs.has(op.uid)
+      ? { ...op, enabled: !isCurrentlyEnabled }
+      : op
   );
 
   setList(updatedList);
@@ -201,7 +194,6 @@ export function toggleOperator({
     setTimeout(() => setWeightChanges({}), 1000);
   }
 }
-
 
 
 
