@@ -18,6 +18,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: |
           cd ~/site
+          source ~/.bashrc
           git fetch origin main
           git reset --hard origin/main
           npm install
