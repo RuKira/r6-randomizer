@@ -37,6 +37,7 @@ export const operatorRoles = {
     Tubarao: ["Anti-Breach"],
     Sentry: ["Intel"],
     Skopos: ["Support"],
+    Denari: ["Anti-Entry", "Crowd Control"],
 
     // Attackers
     Glaz: ["Intel"],
