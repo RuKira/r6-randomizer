@@ -3,6 +3,9 @@ import {v4 as generateUUID} from 'uuid';
 import "../styles/advanced.css";
 import "../styles/buttons.css";
 import "../styles/grid.css";
+import { update, ref } from "firebase/database";
+import { db } from "../hooks/useFirebase"; // adjust path if needed
+
 
 export default function AdvancedPopup({
                                           onClose,
@@ -21,7 +24,8 @@ export default function AdvancedPopup({
                                           userName,
                                           setUserName,
                                           feedback,
-                                          showFeedback
+                                          showFeedback,
+                                          userUID
                                       }) {
     // Generate a new team code (like before)
     const generateTeamCode = () => {
@@ -30,8 +34,17 @@ export default function AdvancedPopup({
     };
 
     const handleJoinTeam = () => {
-        if (pendingCode) {
-            setTeamCode(pendingCode);
+        if (pendingCode.trim()) {
+            setTeamCode(pendingCode.trim());
+            update(ref(db, `teams/${pendingCode.trim()}/${userUID}`), {
+                name: userName.trim(),
+                lastUpdated: Date.now(),
+            }).catch((err) => console.error("Failed to save name on join:", err));
+
+            showFeedback?.("Joined team!");
+        } else if (userName.trim()) {
+            setUserName(userName.trim());
+            showFeedback?.("Name updated!");
         }
     };
 
@@ -130,12 +143,12 @@ export default function AdvancedPopup({
                 <input
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
-                    placeholder="Name"
+                    placeholder="Unnamed"
                 />
                 <input
                     value={pendingCode}
                     onChange={(e) => setPendingCode(e.target.value)}
-                    placeholder="Team Code"
+                    placeholder="75b27a"
                 />
                 <button onClick={handleJoinTeam}>Join</button>
                 <button onClick={generateTeamCode}>Generate</button>

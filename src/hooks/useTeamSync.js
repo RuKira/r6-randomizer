@@ -27,18 +27,21 @@ export const useTeamSync = ({
                             }) => {
     const syncTeamState = useCallback(() => {
         if (!teamCode) return;
+
         const refPath = `teams/${teamCode}/${userUID}/${role}`;
         set(ref(db, refPath), {
-            chosen: chosen.map(op => ({name: op.name, uid: op.uid})), locked, played, rerolled
-        });
+            chosen: chosen.map(op => ({ name: op.name, uid: op.uid })),
+            locked,
+            played,
+            rerolled,
+        }).catch((err) => console.error("Firebase update failed:", err));
 
-        const rootUpdate = {};
-        if (role === 'attack') rootUpdate.swappableAttack = swappableAttack || null;
-        if (role === 'defense') rootUpdate.swappableDefense = swappableDefense || null;
+        const rootUpdate = { lastUpdated: Date.now() };
+        if (role === "attack") rootUpdate.swappableAttack = swappableAttack || null;
+        if (role === "defense") rootUpdate.swappableDefense = swappableDefense || null;
 
-        if (Object.keys(rootUpdate).length > 0) {
-            update(ref(db, `teams/${teamCode}/${userUID}`), rootUpdate);
-        }
+        update(ref(db, `teams/${teamCode}/${userUID}`), rootUpdate)
+            .catch((err) => console.error("Firebase update failed:", err));
     }, [teamCode, userUID, role, chosen, locked, played, rerolled, swappableAttack, swappableDefense]);
 
     useEffect(() => {
@@ -195,11 +198,11 @@ export const useTeamSync = ({
             checkSwaps('defense');
         });
 
-        update(ref(db, `teams/${teamCode}/${userUID}`), {lastUpdated: Date.now()})
+        update(ref(db, `teams/${teamCode}/${userUID}`), { lastUpdated: Date.now() })
             .catch((err) => console.error("Firebase update failed:", err));
 
         const interval = setInterval(() => {
-            update(ref(db, `teams/${teamCode}/${userUID}`), {lastUpdated: Date.now()})
+            update(ref(db, `teams/${teamCode}/${userUID}`), { lastUpdated: Date.now() })
                 .catch((err) => console.error("Firebase update failed:", err));
         }, 60000);
 
@@ -207,7 +210,7 @@ export const useTeamSync = ({
             off(teamRef);
             clearInterval(interval);
         };
-    }, [teamCode, userUID, setTeammateNames, setTeamData]);
+    }, [teamCode, userUID, setTeammateNames, setTeamData, setChosenAttackers, setLockedAttackers, setRerolledAttackers, setPlayedAttackers, setChosenDefenders, setLockedDefenders, setRerolledDefenders, setPlayedDefenders, setSwappableAttack, setSwappableDefense]);
 
     return {
         syncTeamState,

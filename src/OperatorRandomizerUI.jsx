@@ -77,6 +77,7 @@ function OperatorRandomizerUI() {
         rerolled: rerolledAttackers,
         swappableAttack,
         swappableDefense: null,
+        name: myName,
         setTeammateNames,
         setTeamData,
         setSwappableAttack,
@@ -96,6 +97,7 @@ function OperatorRandomizerUI() {
         played: playedDefenders,
         rerolled: rerolledDefenders,
         swappableAttack: null,
+        name: myName,
         swappableDefense,
         setTeammateNames,
         setTeamData,
@@ -111,11 +113,24 @@ function OperatorRandomizerUI() {
     // Effects
     useEffect(() => {
         if (teamCode) syncAttack();
-    }, [chosenAttackers, lockedAttackers, playedAttackers, rerolledAttackers, syncAttack, teamCode, swappableAttack]);
+    }, [chosenAttackers, lockedAttackers, playedAttackers, rerolledAttackers, syncAttack, teamCode, swappableAttack, myName]);
 
     useEffect(() => {
         if (teamCode) syncDefense();
-    }, [chosenDefenders, lockedDefenders, playedDefenders, rerolledDefenders, syncDefense, teamCode, swappableDefense]);
+    }, [chosenDefenders, lockedDefenders, playedDefenders, rerolledDefenders, syncDefense, teamCode, swappableDefense, myName]);
+
+    useEffect(() => {
+        if (!teamCode || !userUID || !myName) return;
+
+        update(ref(db, `teams/${teamCode}/${userUID}`), {
+            name: myName,
+            lastUpdated: Date.now(),
+        }).catch((err) => console.error("Auto-join failed:", err));
+
+        syncAttack();
+        syncDefense();
+    }, [teamCode, userUID, myName, syncAttack, syncDefense]);
+
 
     useEffect(() => {
         if (!teamCode) return;
@@ -278,6 +293,7 @@ function OperatorRandomizerUI() {
                     setTeamCode={setTeamCode}
                     userName={myName}
                     setUserName={setMyName}
+                    userUID={userUID}
                     feedback={feedback}
                     showFeedback={showFeedback}
                 />)}
