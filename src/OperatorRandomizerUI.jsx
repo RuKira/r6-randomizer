@@ -58,7 +58,7 @@ function OperatorRandomizerUI() {
     const APP_VERSION = `v${pkg.version}`;
 
     const {
-        attackers, setAttackers, defenders, setDefenders, _reloadOperatorsFromPreset
+        attackers, setAttackers, defenders, setDefenders
     } = useOperatorsState(STORAGE_KEY, attackerNames, defenderNames);
 
     const {teamCode, setTeamCode, myName, setMyName, userUID} = useTeamCode();
