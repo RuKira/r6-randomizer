@@ -339,14 +339,17 @@ function OperatorRandomizerUI() {
                     />
                 </div>
             </div>
-            <div className="spin-controls">
-                <button
-                    className="styled-button"
-                    onClick={handleRollBoth}
-                    title="Spin 6 random operators for both sides (Attack & Defense)"
-                >
-                    SPIN OPERATORS
-                </button>
+            <div>
+                <div className="version-label">{APP_VERSION}</div>
+                <div className="spin-controls">
+                    <button
+                        className="styled-button"
+                        onClick={handleRollBoth}
+                        title="Spin 6 random operators for both sides (Attack & Defense)"
+                    >
+                        SPIN OPERATORS
+                    </button>
+                </div>
             </div>
             <div className="operators-grid">
                 <h2>Defenders</h2>
