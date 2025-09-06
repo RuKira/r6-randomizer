@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import Overlay from "./Overlay";
 
-function BodyClassManager() {
+export function BodyClassManager() {
     const location = useLocation();
 
     useEffect(() => {
