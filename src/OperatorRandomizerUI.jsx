@@ -9,6 +9,7 @@ import {attackerNames, defenderNames} from "./constants/operatorNames.js";
 import TeammateView from './components/TeammateDisplay';
 import ChosenOperators from './components/ChosenOperators';
 import OperatorGrid from "./components/OperatorGrid.jsx";
+import AdvancedPopup from "./components/AdvancedPopup.jsx";
 // Local Hook Imports
 import {useTeamSync} from "./hooks/useTeamSync.js";
 import {useLayoutScale} from "./hooks/useLayoutScale.js";
@@ -22,10 +23,10 @@ import {buildOps, loadDisabledOperators, toggleOperator as baseToggleOperator} f
 import {refreshOps} from "./utils/resetUtils.js";
 import {toggleLock} from "./utils/lockUtils.js";
 import {handleDefaultPreset, handleSavePreset, handleSaveWeights, removeChosen} from "./utils/presetUtils.js";
+import {analyzeTeamComposition} from "./utils/teamHealthUtils.js";
 // Local Style Imports
 import './styles/buttons.css';
 import './App.css';
-import {analyzeTeamComposition} from "./utils/teamHealthUtils.js";
 
 function OperatorRandomizerUI() {
 
@@ -48,6 +49,7 @@ function OperatorRandomizerUI() {
     const [healthCheck, setHealthCheck] = useState({attackers: [], defenders: []});
     const [swappableAttack, setSwappableAttack] = useState(null);
     const [swappableDefense, setSwappableDefense] = useState(null);
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
 
     // Variables
@@ -264,239 +266,246 @@ function OperatorRandomizerUI() {
         handleReset();
     };
     return (<div className="viewport-scaler">
-            <div className="grid-layout centered fullscreen">
-                <div className="chosen-list chosen-left">
-                    <ChosenOperators
-                        list={chosenAttackers}
-                        role="attack"
-                        locked={lockedAttackers}
-                        rerolled={rerolledAttackers}
-                        played={playedAttackers}
-                        fadingReroll={fadingReroll}
-                        removingAttackers={removingAttackers}
-                        removingDefenders={removingDefenders}
-                        rerollOperator={handleRerollOperator}
-                        toggleLock={(uid, role) => toggleLock({
-                            uid,
-                            role,
-                            lockedAttackers,
-                            lockedDefenders,
-                            setLockedAttackers,
-                            setLockedDefenders,
-                            syncAttack,
-                            syncDefense
-                        })}
-                        removeChosen={(uid, role) => removeChosen({
-                            uid,
-                            role,
-                            teamCode,
-                            teamData,
-                            setPlayedAttackers,
-                            setPlayedDefenders,
-                            setRemovingAttackers,
-                            setRemovingDefenders,
-                            setChosenAttackers,
-                            setChosenDefenders,
-                            setLockedAttackers,
-                            setLockedDefenders,
-                            syncAttack,
-                            syncDefense
-                        })}
-                        swappableUid={swappableAttack}
-                        onPickForSwap={(uid) => setSwappableAttack(prev => prev === uid ? null : uid)}
-                    />
-                </div>
-                <div className="operators-grid">
-                    <h2>Attackers</h2>
-                    <OperatorGrid
-                        list={attackers}
-                        role="attack"
-                        toggleOperator={toggleOperator}
-                        weightChanges={weightChanges}
-                    />
-                    <div className="team-health-bar">
-                        <div>
-                            <ul>{healthCheck.attackers.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
-                        </div>
-                    </div>
-                    <div>
-                        <TeammateView
-                            teamData={teamData.attackers}
-                            teammateNames={teammateNames}
-                            userUID={userUID}
-                        />
-                    </div>
-                </div>
-                <div className="buttons-area">
-                    <div className="version-label">{APP_VERSION}</div>
+        <div className="grid-layout centered fullscreen">
+            <div>
+                <button onClick={() => setShowAdvanced(true)} className="gear-btn">⚙️</button>
 
-                    <div className="team-link-ui">
-                        <input
-                            type="text"
-                            value={pendingCode}
-                            onChange={(e) => setPendingCode(e.target.value)}
-                            placeholder="Enter team code"
-                        />
-                    </div>
+                {showAdvanced && (<AdvancedPopup onClose={() => setShowAdvanced(false)}/>)}
 
-                    <div>
-                        <input
-                            title="Enter your name to identify yourself in the team."
-                            type="text"
-                            placeholder="Your name..."
-                            value={myName}
-                            onChange={(e) => setMyName(e.target.value)}
-                            style={{padding: "6px", width: "160px", marginBottom: "6px"}}
-                        />
-                    </div>
-
-                    <div className="team-code-input">
-                        <button
-                            title="Join a team with a code to share operator choices."
-                            onClick={() => {
-                                if (!pendingCode.trim()) return;
-
-                                setTeamCode(pendingCode.trim());
-
-                                update(ref(db, `teams/${pendingCode}/${userUID}`), {name: myName})
-                                    .catch((err) => console.error("Firebase update failed:", err));
-
-                                localStorage.setItem("team-username", myName);
-                                window.location.reload();
-                            }}
-                            style={{marginLeft: "6px"}}
-                        >
-                            Join
-                        </button>
-                        <button
-                            title="Generate a new team code to share with others."
-                            onClick={() => {
-                                const newCode = generateUUID().slice(0, 6);
-                                setPendingCode(newCode);
-                            }}
-                            style={{marginLeft: "6px"}}
-                        >
-                            Generate
-                        </button>
-                    </div>
-                    <div className="spin-controls">
-                        <button
-                            onClick={handleRollBoth}
-                            title="Spin 6 random operators for both sides (Attack & Defense)"
-                        >
-                            SPIN OPERATORS
-                        </button>
-
-                        <label
-                            className="allow-dupes-toggle"
-                            title="Toggle whether duplicate operators can appear in the same roll."
-                            style={{marginTop: "6px", display: "flex", alignItems: "center", gap: "6px"}}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <input
-                                type="checkbox"
-                                checked={allowDupes}
-                                onChange={(e) => setAllowDupes(e.target.checked)}
-                            />
-                            Allow Dupes
-                        </label>
-                    </div>
-                    <button
-                        onClick={resetAll}
-                        title="Reset all weights and rerolls, but keep your saved preset (use this to freshen things up)"
-                    >
-                        RESET ALL
-                    </button>
-
-                    <button onClick={() => handleSavePreset({
-                        attackers, defenders, showFeedback
+                {/* rest of your UI */}
+            </div>
+            <div className="chosen-list chosen-left">
+                <ChosenOperators
+                    list={chosenAttackers}
+                    role="attack"
+                    locked={lockedAttackers}
+                    rerolled={rerolledAttackers}
+                    played={playedAttackers}
+                    fadingReroll={fadingReroll}
+                    removingAttackers={removingAttackers}
+                    removingDefenders={removingDefenders}
+                    rerollOperator={handleRerollOperator}
+                    toggleLock={(uid, role) => toggleLock({
+                        uid,
+                        role,
+                        lockedAttackers,
+                        lockedDefenders,
+                        setLockedAttackers,
+                        setLockedDefenders,
+                        syncAttack,
+                        syncDefense
                     })}
-                            title="Save your enabled/disabled operator selection. Click operators in the grid to disable them."
-                    >
-                        SAVE SELECTION
-                    </button>
-
-                    <button onClick={() => handleSaveWeights({
-                        attackers, defenders, showFeedback
+                    removeChosen={(uid, role) => removeChosen({
+                        uid,
+                        role,
+                        teamCode,
+                        teamData,
+                        setPlayedAttackers,
+                        setPlayedDefenders,
+                        setRemovingAttackers,
+                        setRemovingDefenders,
+                        setChosenAttackers,
+                        setChosenDefenders,
+                        setLockedAttackers,
+                        setLockedDefenders,
+                        syncAttack,
+                        syncDefense
                     })}
-                            title="Save the current operator weights based on usage. You'll see weights adjust as you spin."
-                    >
-                        SAVE WEIGHTS
-                    </button>
-
-                    <button onClick={() => handleDefaultPreset({
-                        attackers, defenders, setAttackers, setDefenders, showFeedback, refreshOps: handleReset // OR pass refreshOps directly if preferred
-                    })}
-                            title="Reset everything to default: re-enables all operators, resets weights, and overwrites your current save."
-                    >
-                        DEFAULT SELECTION
-                    </button>
-                    {feedback && <div className="feedback">{feedback}</div>}
-                </div>
-                <div className="operators-grid">
-                    <h2>Defenders</h2>
-                    <OperatorGrid
-                        list={defenders}
-                        role="defense"
-                        toggleOperator={toggleOperator}
-                        weightChanges={weightChanges}
-                    />
-                    <div className="team-health-bar">
-                        <div>
-                            <ul>{healthCheck.defenders.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
-                        </div>
-                    </div>
+                    swappableUid={swappableAttack}
+                    onPickForSwap={(uid) => setSwappableAttack(prev => prev === uid ? null : uid)}
+                />
+            </div>
+            <div className="operators-grid">
+                <h2>Attackers</h2>
+                <OperatorGrid
+                    list={attackers}
+                    role="attack"
+                    toggleOperator={toggleOperator}
+                    weightChanges={weightChanges}
+                />
+                <div className="team-health-bar">
                     <div>
-                        <TeammateView
-                            teamData={teamData.defenders}
-                            teammateNames={teammateNames}
-                            userUID={userUID}
-                        />
+                        <ul>{healthCheck.attackers.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
                     </div>
                 </div>
-                <div className="chosen-list chosen-right">
-                    <ChosenOperators
-                        list={chosenDefenders}
-                        role="defense"
-                        locked={lockedDefenders}
-                        rerolled={rerolledDefenders}
-                        played={playedDefenders}
-                        fadingReroll={fadingReroll}
-                        removingAttackers={removingAttackers}
-                        removingDefenders={removingDefenders}
-                        rerollOperator={handleRerollOperator}
-                        toggleLock={(uid, role) => toggleLock({
-                            uid,
-                            role,
-                            lockedAttackers,
-                            lockedDefenders,
-                            setLockedAttackers,
-                            setLockedDefenders,
-                            syncAttack,
-                            syncDefense
-                        })}
-                        removeChosen={(uid, role) => removeChosen({
-                            uid,
-                            role,
-                            teamCode,
-                            teamData,
-                            setPlayedAttackers,
-                            setPlayedDefenders,
-                            setRemovingAttackers,
-                            setRemovingDefenders,
-                            setChosenAttackers,
-                            setChosenDefenders,
-                            setLockedAttackers,
-                            setLockedDefenders,
-                            syncAttack,
-                            syncDefense
-                        })}
-                        swappableUid={swappableDefense}
-                        onPickForSwap={(uid) => setSwappableDefense(prev => prev === uid ? null : uid)}
+                <div>
+                    <TeammateView
+                        teamData={teamData.attackers}
+                        teammateNames={teammateNames}
+                        userUID={userUID}
                     />
                 </div>
             </div>
-        </div>);
+            <div className="buttons-area">
+                <div className="version-label">{APP_VERSION}</div>
+
+                <div className="team-link-ui">
+                    <input
+                        type="text"
+                        value={pendingCode}
+                        onChange={(e) => setPendingCode(e.target.value)}
+                        placeholder="Enter team code"
+                    />
+                </div>
+
+                <div>
+                    <input
+                        title="Enter your name to identify yourself in the team."
+                        type="text"
+                        placeholder="Your name..."
+                        value={myName}
+                        onChange={(e) => setMyName(e.target.value)}
+                        style={{padding: "6px", width: "160px", marginBottom: "6px"}}
+                    />
+                </div>
+
+                <div className="team-code-input">
+                    <button
+                        title="Join a team with a code to share operator choices."
+                        onClick={() => {
+                            if (!pendingCode.trim()) return;
+
+                            setTeamCode(pendingCode.trim());
+
+                            update(ref(db, `teams/${pendingCode}/${userUID}`), {name: myName})
+                                .catch((err) => console.error("Firebase update failed:", err));
+
+                            localStorage.setItem("team-username", myName);
+                            window.location.reload();
+                        }}
+                        style={{marginLeft: "6px"}}
+                    >
+                        Join
+                    </button>
+                    <button
+                        title="Generate a new team code to share with others."
+                        onClick={() => {
+                            const newCode = generateUUID().slice(0, 6);
+                            setPendingCode(newCode);
+                        }}
+                        style={{marginLeft: "6px"}}
+                    >
+                        Generate
+                    </button>
+                </div>
+                <div className="spin-controls">
+                    <button
+                        onClick={handleRollBoth}
+                        title="Spin 6 random operators for both sides (Attack & Defense)"
+                    >
+                        SPIN OPERATORS
+                    </button>
+
+                    <label
+                        className="allow-dupes-toggle"
+                        title="Toggle whether duplicate operators can appear in the same roll."
+                        style={{marginTop: "6px", display: "flex", alignItems: "center", gap: "6px"}}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <input
+                            type="checkbox"
+                            checked={allowDupes}
+                            onChange={(e) => setAllowDupes(e.target.checked)}
+                        />
+                        Allow Dupes
+                    </label>
+                </div>
+                <button
+                    onClick={resetAll}
+                    title="Reset all weights and rerolls, but keep your saved preset (use this to freshen things up)"
+                >
+                    RESET ALL
+                </button>
+
+                <button onClick={() => handleSavePreset({
+                    attackers, defenders, showFeedback
+                })}
+                        title="Save your enabled/disabled operator selection. Click operators in the grid to disable them."
+                >
+                    SAVE SELECTION
+                </button>
+
+                <button onClick={() => handleSaveWeights({
+                    attackers, defenders, showFeedback
+                })}
+                        title="Save the current operator weights based on usage. You'll see weights adjust as you spin."
+                >
+                    SAVE WEIGHTS
+                </button>
+
+                <button onClick={() => handleDefaultPreset({
+                    attackers, defenders, setAttackers, setDefenders, showFeedback, refreshOps: handleReset // OR pass refreshOps directly if preferred
+                })}
+                        title="Reset everything to default: re-enables all operators, resets weights, and overwrites your current save."
+                >
+                    DEFAULT SELECTION
+                </button>
+                {feedback && <div className="feedback">{feedback}</div>}
+            </div>
+            <div className="operators-grid">
+                <h2>Defenders</h2>
+                <OperatorGrid
+                    list={defenders}
+                    role="defense"
+                    toggleOperator={toggleOperator}
+                    weightChanges={weightChanges}
+                />
+                <div className="team-health-bar">
+                    <div>
+                        <ul>{healthCheck.defenders.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
+                    </div>
+                </div>
+                <div>
+                    <TeammateView
+                        teamData={teamData.defenders}
+                        teammateNames={teammateNames}
+                        userUID={userUID}
+                    />
+                </div>
+            </div>
+            <div className="chosen-list chosen-right">
+                <ChosenOperators
+                    list={chosenDefenders}
+                    role="defense"
+                    locked={lockedDefenders}
+                    rerolled={rerolledDefenders}
+                    played={playedDefenders}
+                    fadingReroll={fadingReroll}
+                    removingAttackers={removingAttackers}
+                    removingDefenders={removingDefenders}
+                    rerollOperator={handleRerollOperator}
+                    toggleLock={(uid, role) => toggleLock({
+                        uid,
+                        role,
+                        lockedAttackers,
+                        lockedDefenders,
+                        setLockedAttackers,
+                        setLockedDefenders,
+                        syncAttack,
+                        syncDefense
+                    })}
+                    removeChosen={(uid, role) => removeChosen({
+                        uid,
+                        role,
+                        teamCode,
+                        teamData,
+                        setPlayedAttackers,
+                        setPlayedDefenders,
+                        setRemovingAttackers,
+                        setRemovingDefenders,
+                        setChosenAttackers,
+                        setChosenDefenders,
+                        setLockedAttackers,
+                        setLockedDefenders,
+                        syncAttack,
+                        syncDefense
+                    })}
+                    swappableUid={swappableDefense}
+                    onPickForSwap={(uid) => setSwappableDefense(prev => prev === uid ? null : uid)}
+                />
+            </div>
+        </div>
+    </div>);
 }
 
 export default OperatorRandomizerUI;
