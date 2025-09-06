@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&display=swap');
+
 .advanced-overlay {
     position: fixed;
     top: 0;
@@ -13,13 +15,15 @@
 
 .advanced-popup {
     background: #1e1e1e;
-    padding: 20px;
-    border-radius: 12px;
-    width: 600px;
-    max-height: 80vh;
+    padding: 30px;
+    width: 95vw; /* take more of screen width */
+    max-width: 1600px; /* allow larger max width */
+    height: 100vh; /* taller */
+    max-height: 100vh; /* less wasted space */
     overflow-y: auto;
     color: white;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.9);
+    border-radius: 8px; /* optional: soften edges */
 }
 
 .close-btn {
@@ -28,6 +32,7 @@
     border: none;
     color: white;
     font-size: 20px;
+    font-family: "Anonymous Pro", monospace;
     cursor: pointer;
 }
 
@@ -38,6 +43,17 @@
     background: transparent;
     border: none;
     font-size: 24px;
+    font-family: "Anonymous Pro", monospace;
     cursor: pointer;
     color: white;
+}
+
+.advanced-grid-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.advanced-column {
+    flex: 1;
 }

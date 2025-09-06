@@ -2,13 +2,11 @@
 import pkg from '../package.json';
 import {useEffect, useRef, useState} from 'react';
 import {ref, update} from "firebase/database";
-import {v4 as generateUUID} from 'uuid';
 // Local Constants Imports
 import {attackerNames, defenderNames} from "./constants/operatorNames.js";
 // Local Component Imports
 import TeammateView from './components/TeammateDisplay';
 import ChosenOperators from './components/ChosenOperators';
-import OperatorGrid from "./components/OperatorGrid.jsx";
 import AdvancedPopup from "./components/AdvancedPopup.jsx";
 // Local Hook Imports
 import {useTeamSync} from "./hooks/useTeamSync.js";
@@ -41,7 +39,6 @@ function OperatorRandomizerUI() {
     const [playedDefenders, setPlayedDefenders] = useState([]);
     const [fadingReroll, _setFadingReroll] = useState(null);
     const [allowDupes, setAllowDupes] = useState(true);
-    const [weightChanges, setWeightChanges] = useState({});
     const [teamData, setTeamData] = useState({attackers: [], defenders: []});
     const [teammateNames, setTeammateNames] = useState({});
     const [removingAttackers, setRemovingAttackers] = useState([]);
@@ -61,9 +58,8 @@ function OperatorRandomizerUI() {
     const APP_VERSION = `v${pkg.version}`;
 
     const {
-        attackers, setAttackers, defenders, setDefenders, reloadOperatorsFromPreset
+        attackers, setAttackers, defenders, setDefenders, _reloadOperatorsFromPreset
     } = useOperatorsState(STORAGE_KEY, attackerNames, defenderNames);
-
 
     const {teamCode, setTeamCode, myName, setMyName, userUID} = useTeamCode();
 
@@ -198,7 +194,6 @@ function OperatorRandomizerUI() {
             locked: lockedAttackers,
             setList: setAttackers,
             setChosen: setChosenAttackers,
-            setWeightChanges,
             setLocked: setLockedAttackers,
             setRerolled: setRerolledAttackers,
             setPlayed: setPlayedAttackers,
@@ -214,7 +209,6 @@ function OperatorRandomizerUI() {
             locked: lockedDefenders,
             setList: setDefenders,
             setChosen: setChosenDefenders,
-            setWeightChanges,
             setLocked: setLockedDefenders,
             setRerolled: setRerolledDefenders,
             setPlayed: setPlayedDefenders,
@@ -232,7 +226,6 @@ function OperatorRandomizerUI() {
             setChosen: isAttack ? setChosenAttackers : setChosenDefenders,
             list: isAttack ? attackers : defenders,
             setList: isAttack ? setAttackers : setDefenders,
-            setWeightChanges,
             allowDupes,
             setRerolled: isAttack ? setRerolledAttackers : setRerolledDefenders,
             played: isAttack ? playedAttackers : playedDefenders
@@ -250,10 +243,8 @@ function OperatorRandomizerUI() {
             chosenList: isAttack ? chosenAttackers : chosenDefenders,
             setChosen: isAttack ? setChosenAttackers : setChosenDefenders,
             setRerolled: isAttack ? setRerolledAttackers : setRerolledDefenders,
-            rerollHandler: handleRerollOperator,
             playedList: isAttack ? playedAttackers : playedDefenders,
-            allowDupes,
-            setWeightChanges
+            allowDupes
         });
     };
 
@@ -270,9 +261,26 @@ function OperatorRandomizerUI() {
             <div>
                 <button onClick={() => setShowAdvanced(true)} className="gear-btn">⚙️</button>
 
-                {showAdvanced && (<AdvancedPopup onClose={() => setShowAdvanced(false)}/>)}
-
-                {/* rest of your UI */}
+                {showAdvanced && (<AdvancedPopup
+                    onClose={() => setShowAdvanced(false)}
+                    attackers={attackers}
+                    defenders={defenders}
+                    toggleOperator={toggleOperator}
+                    handleSavePreset={handleSavePreset}
+                    handleResetPreset={resetAll}
+                    handleDefaultPreset={handleDefaultPreset}
+                    handleSaveWeights={handleSaveWeights}
+                    dupeToggle={allowDupes}
+                    setDupeToggle={setAllowDupes}
+                    pendingCode={pendingCode}
+                    setPendingCode={setPendingCode}
+                    teamCode={teamCode}
+                    setTeamCode={setTeamCode}
+                    userName={myName}
+                    setUserName={setMyName}
+                    feedback={feedback}
+                    showFeedback={showFeedback}
+                />)}
             </div>
             <div className="chosen-list chosen-left">
                 <ChosenOperators
@@ -311,18 +319,13 @@ function OperatorRandomizerUI() {
                         syncAttack,
                         syncDefense
                     })}
+                    toggleOperator={toggleOperator}
                     swappableUid={swappableAttack}
                     onPickForSwap={(uid) => setSwappableAttack(prev => prev === uid ? null : uid)}
                 />
             </div>
             <div className="operators-grid">
                 <h2>Attackers</h2>
-                <OperatorGrid
-                    list={attackers}
-                    role="attack"
-                    toggleOperator={toggleOperator}
-                    weightChanges={weightChanges}
-                />
                 <div className="team-health-bar">
                     <div>
                         <ul>{healthCheck.attackers.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
@@ -336,120 +339,17 @@ function OperatorRandomizerUI() {
                     />
                 </div>
             </div>
-            <div className="buttons-area">
-                <div className="version-label">{APP_VERSION}</div>
-
-                <div className="team-link-ui">
-                    <input
-                        type="text"
-                        value={pendingCode}
-                        onChange={(e) => setPendingCode(e.target.value)}
-                        placeholder="Enter team code"
-                    />
-                </div>
-
-                <div>
-                    <input
-                        title="Enter your name to identify yourself in the team."
-                        type="text"
-                        placeholder="Your name..."
-                        value={myName}
-                        onChange={(e) => setMyName(e.target.value)}
-                        style={{padding: "6px", width: "160px", marginBottom: "6px"}}
-                    />
-                </div>
-
-                <div className="team-code-input">
-                    <button
-                        title="Join a team with a code to share operator choices."
-                        onClick={() => {
-                            if (!pendingCode.trim()) return;
-
-                            setTeamCode(pendingCode.trim());
-
-                            update(ref(db, `teams/${pendingCode}/${userUID}`), {name: myName})
-                                .catch((err) => console.error("Firebase update failed:", err));
-
-                            localStorage.setItem("team-username", myName);
-                            window.location.reload();
-                        }}
-                        style={{marginLeft: "6px"}}
-                    >
-                        Join
-                    </button>
-                    <button
-                        title="Generate a new team code to share with others."
-                        onClick={() => {
-                            const newCode = generateUUID().slice(0, 6);
-                            setPendingCode(newCode);
-                        }}
-                        style={{marginLeft: "6px"}}
-                    >
-                        Generate
-                    </button>
-                </div>
-                <div className="spin-controls">
-                    <button
-                        onClick={handleRollBoth}
-                        title="Spin 6 random operators for both sides (Attack & Defense)"
-                    >
-                        SPIN OPERATORS
-                    </button>
-
-                    <label
-                        className="allow-dupes-toggle"
-                        title="Toggle whether duplicate operators can appear in the same roll."
-                        style={{marginTop: "6px", display: "flex", alignItems: "center", gap: "6px"}}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <input
-                            type="checkbox"
-                            checked={allowDupes}
-                            onChange={(e) => setAllowDupes(e.target.checked)}
-                        />
-                        Allow Dupes
-                    </label>
-                </div>
+            <div className="spin-controls">
                 <button
-                    onClick={resetAll}
-                    title="Reset all weights and rerolls, but keep your saved preset (use this to freshen things up)"
+                    className="styled-button"
+                    onClick={handleRollBoth}
+                    title="Spin 6 random operators for both sides (Attack & Defense)"
                 >
-                    RESET ALL
+                    SPIN OPERATORS
                 </button>
-
-                <button onClick={() => handleSavePreset({
-                    attackers, defenders, showFeedback
-                })}
-                        title="Save your enabled/disabled operator selection. Click operators in the grid to disable them."
-                >
-                    SAVE SELECTION
-                </button>
-
-                <button onClick={() => handleSaveWeights({
-                    attackers, defenders, showFeedback
-                })}
-                        title="Save the current operator weights based on usage. You'll see weights adjust as you spin."
-                >
-                    SAVE WEIGHTS
-                </button>
-
-                <button onClick={() => handleDefaultPreset({
-                    attackers, defenders, setAttackers, setDefenders, showFeedback, refreshOps: handleReset // OR pass refreshOps directly if preferred
-                })}
-                        title="Reset everything to default: re-enables all operators, resets weights, and overwrites your current save."
-                >
-                    DEFAULT SELECTION
-                </button>
-                {feedback && <div className="feedback">{feedback}</div>}
             </div>
             <div className="operators-grid">
                 <h2>Defenders</h2>
-                <OperatorGrid
-                    list={defenders}
-                    role="defense"
-                    toggleOperator={toggleOperator}
-                    weightChanges={weightChanges}
-                />
                 <div className="team-health-bar">
                     <div>
                         <ul>{healthCheck.defenders.map((msg, i) => <li key={i}>{msg}</li>)}</ul>
@@ -500,6 +400,7 @@ function OperatorRandomizerUI() {
                         syncAttack,
                         syncDefense
                     })}
+                    toggleOperator={toggleOperator}
                     swappableUid={swappableDefense}
                     onPickForSwap={(uid) => setSwappableDefense(prev => prev === uid ? null : uid)}
                 />

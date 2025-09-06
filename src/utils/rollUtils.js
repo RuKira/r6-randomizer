@@ -7,7 +7,6 @@ export function rollOperatorsForRole({
                                          locked,
                                          setList,
                                          setChosen,
-                                         setWeightChanges,
                                          setLocked,
                                          setRerolled,
                                          setPlayed,
@@ -64,10 +63,8 @@ export function rollOperatorsForRole({
         }
     });
 
-    setWeightChanges(prev => ({...prev, ...newWeightChanges}));
     setList(finalList);
     setChosen(result);
-    setTimeout(() => setWeightChanges({}), 1000);
 
     setLocked(prev => prev.filter(name => usedNames.has(name)));
     setRerolled(prev => prev.filter(name => !usedNames.has(name)));
@@ -79,15 +76,7 @@ export function rollOperatorsForRole({
 }
 
 export const rerollOperator = ({
-                                   uid,
-                                   chosen,
-                                   setChosen,
-                                   list,
-                                   setList,
-                                   allowDupes,
-                                   setWeightChanges,
-                                   setRerolled,
-                                   played,
+                                   uid, chosen, setChosen, list, setList, allowDupes, setRerolled, played,
                                }) => {
     const oldOp = chosen.find(op => op.uid === uid);
     if (!oldOp) return;
@@ -122,16 +111,9 @@ export const rerollOperator = ({
         return op;
     });
 
-    const changes = {
-        [oldOp.name]: 'up', [newOp.name]: 'down'
-    };
 
     setChosen(updatedChosen);
     setList(updatedList);
-    setWeightChanges(prev => ({...prev, ...changes}));
-    if (setWeightChanges) {
-        setTimeout(() => setWeightChanges({}), 1000);
-    }
 
     setRerolled(prev => [...prev, newUid]);
 };

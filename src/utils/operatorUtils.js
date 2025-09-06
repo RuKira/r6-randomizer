@@ -112,7 +112,6 @@ export function loadDisabledOperators(list, role, preset, forceEnableAll = false
 
 export function toggleOperator({
                                    uid,
-                                   role,
                                    list,
                                    setList,
                                    chosenList,
@@ -122,7 +121,15 @@ export function toggleOperator({
                                    setWeightChanges,
                                    playedList
                                }) {
-    const clickedOp = list.find(op => op.uid === uid);
+    let clickedOp = list.find(op => op.uid === uid);
+
+    if (!clickedOp) {
+        const chosenOp = chosenList.find(op => op.uid === uid);
+        if (chosenOp) {
+            clickedOp = list.find(op => op.name === chosenOp.name);
+        }
+    }
+
     if (!clickedOp) return;
     if (clickedOp.hidden) return;
 
@@ -171,8 +178,7 @@ export function toggleOperator({
     }
 
     const updatedList = list.map(op => op.name === nameToToggle && !playedUIDs.has(op.uid) ? {
-        ...op,
-        enabled: !isCurrentlyEnabled
+        ...op, enabled: !isCurrentlyEnabled
     } : op);
 
     setList(updatedList);

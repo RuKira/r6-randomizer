@@ -1,11 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&display=swap');
 
 .chosen-list {
+    align-items: center;
+    position: absolute;
+    top: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    align-items: center;
     justify-content: center;
+    gap: 10px;
+}
+
+.chosen-left {
+    left: 5%
+}
+
+.chosen-right {
+    right: 5%
 }
 
 .chosen-icon {
@@ -29,7 +40,7 @@
     image-rendering: pixelated;
 }
 
-.chosen-icon.rerolled{ 
+.chosen-icon.rerolled {
     outline: 2px solid dodgerblue;
     position: relative;
     z-index: 4;
@@ -43,7 +54,7 @@
 
 .chosen-icon.swappable {
     outline: 2px solid #bc00cc !important;
-    box-sizing: relative;
+    position: relative;
     z-index: 2;
 }
 
@@ -56,11 +67,12 @@
 }
 
 .chosen-icon.played button {
-  opacity: 0.4;
-  cursor: not-allowed;
+    opacity: 0.4;
+    cursor: not-allowed;
 }
+
 .chosen-icon.played img {
-  pointer-events: none;
+    pointer-events: none;
 }
 
 .chosen-icon.fade-out {
@@ -70,27 +82,42 @@
 
 .chosen-buttons {
     display: flex;
-    gap: 4px;
-    margin-top: 6px;
+    justify-content: center;
+    gap: 4px; /* keep spacing small */
+    margin-top: 4px;
 }
 
 .chosen-buttons button {
-    background-color: #2c2c2c;
-    color: white;
+    width: 22px;
+    height: 22px;
+    font-size: 14px; /* shrink icons slightly */
+    padding: 0;
     border: none;
-    padding: 4px 6px;
     border-radius: 4px;
-    font-size: 14px;
-    font-family: "Anonymous Pro", monospace;
+    background-color: #333;
+    color: white;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: background-color 0.2s;
 }
 
 .chosen-buttons button:hover {
-    background-color: #444;
+    background-color: #555;
 }
 
-.fade-out {
-    opacity: 0;
-    transition: opacity 0.4s ease;
+.chosen-buttons button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.chosen-header {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #fff; /* or match your theme */
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }

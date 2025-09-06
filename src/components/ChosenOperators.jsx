@@ -11,6 +11,7 @@ export default function ChosenList({
                                        removingAttackers,
                                        removingDefenders,
                                        rerollOperator,
+                                       toggleOperator,
                                        toggleLock,
                                        removeChosen,
                                        onPickForSwap,
@@ -25,69 +26,79 @@ export default function ChosenList({
     });
 
     return (<div className="chosen-operators">
-            {sortedList.map((op, idx) => {
-                const isLocked = locked.includes(op.uid);
-                const isRerolled = rerolled.includes(op.uid);
-                const isPlayed = played.includes(op.uid);
-                const isFading = fadingReroll === op.uid;
-                const isRemoving = (role === 'attack' ? removingAttackers.includes(op.uid) : removingDefenders.includes(op.uid));
-                const isSwappable = swappableUid === op.uid;
+        {sortedList.map((op, idx) => {
+            const isLocked = locked.includes(op.uid);
+            const isRerolled = rerolled.includes(op.uid);
+            const isPlayed = played.includes(op.uid);
+            const isFading = fadingReroll === op.uid;
+            const isRemoving = (role === 'attack' ? removingAttackers.includes(op.uid) : removingDefenders.includes(op.uid));
+            const isSwappable = swappableUid === op.uid;
 
-                let statusClass = '';
-                if (isPlayed) {
-                    statusClass = 'played';
-                } else if (isSwappable) {
-                    statusClass = 'swappable';
-                } else if (isLocked) {
-                    statusClass = 'locked';
-                } else if (isRerolled) {
-                    statusClass = 'rerolled';
-                }
+            let statusClass = '';
+            if (isPlayed) {
+                statusClass = 'played';
+            } else if (isSwappable) {
+                statusClass = 'swappable';
+            } else if (isLocked) {
+                statusClass = 'locked';
+            } else if (isRerolled) {
+                statusClass = 'rerolled';
+            }
 
-                return (<div
-                        key={op.uid || `${op.name}-${idx}`}
-                        className={`chosen-icon 
+            return (<div
+                key={op.uid || `${op.name}-${idx}`}
+                className={`chosen-icon 
 							${statusClass}
               ${(isFading || isRemoving) ? '' : ''}
             `}
+            >
+                <img
+                    src={op.image}
+                    alt={op.name}
+                    title={op.name}
+                    onClick={() => !isPlayed && onPickForSwap(op.uid)}
+                />
+                <div className="chosen-buttons">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            rerollOperator(op.uid, role);
+                        }}
+                        title="Reroll"
+                        disabled={isPlayed}
+                    >🔁
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toggleLock(op.uid, role);
+                        }}
+                        title={isLocked ? "Unlock" : "Lock"}
+                        disabled={isPlayed}
                     >
-                        <img
-                            src={op.image}
-                            alt={op.name}
-                            title={op.name}
-                            onClick={() => !isPlayed && onPickForSwap(op.uid)}
-                        />
-                        <div className="chosen-buttons">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    rerollOperator(op.uid, role);
-                                }}
-                                title="Reroll"
-                                disabled={isPlayed}
-                            >🔁
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleLock(op.uid, role);
-                                }}
-                                title={isLocked ? "Unlock" : "Lock"}
-                                disabled={isPlayed}
-                            >
-                                {isLocked ? "🔓" : "🔒"}
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    removeChosen(op.uid, role);
-                                }}
-                                title="Played (Remove)"
-                                disabled={isPlayed}
-                            >✅
-                            </button>
-                        </div>
-                    </div>);
-            })}
-        </div>);
+                        {isLocked ? "🔓" : "🔒"}
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            removeChosen(op.uid, role);
+                        }}
+                        title="Played (Remove)"
+                        disabled={isPlayed}
+                    >✅
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toggleOperator(op.uid, role);
+                        }}
+                        title="Ban this operator"
+                        disabled={isPlayed}
+                    >
+                        🚫
+                    </button>
+                </div>
+            </div>);
+        })}
+    </div>);
 }
