@@ -1,6 +1,15 @@
 // ADD COMMENTS TO EXPLAIN THE FUNCTIONALITY
 
-export const toggleLock = ({ uid, role, lockedAttackers, lockedDefenders, setLockedAttackers, setLockedDefenders, syncAttack, syncDefense }) => {
+export const toggleLock = ({
+                               uid,
+                               role,
+                               lockedAttackers,
+                               lockedDefenders,
+                               setLockedAttackers,
+                               setLockedDefenders,
+                               syncAttack,
+                               syncDefense
+                           }) => {
     const locked = role === 'attack' ? lockedAttackers : lockedDefenders;
     const setLocked = role === 'attack' ? setLockedAttackers : setLockedDefenders;
 
@@ -10,7 +19,6 @@ export const toggleLock = ({ uid, role, lockedAttackers, lockedDefenders, setLoc
         setLocked([...locked, uid]);
     }
 
-    if (role === 'attack') syncAttack();
-    else syncDefense();
+    if (role === 'attack') syncAttack(); else syncDefense();
 };
 

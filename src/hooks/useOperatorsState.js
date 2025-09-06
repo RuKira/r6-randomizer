@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { buildOps, loadDisabledOperators } from '../utils/operatorUtils'; // Adjust the import path as necessary
+import {useEffect, useState} from 'react';
+import {buildOps, loadDisabledOperators} from '../utils/operatorUtils'; // Adjust the import path as necessary
 
 // Safely builds operator objects only if names is a valid array
 
@@ -37,10 +37,6 @@ export function useOperatorsState(storageKey, attackerNames, defenderNames) {
     };
 
     return {
-        attackers,
-        setAttackers,
-        defenders,
-        setDefenders,
-        reloadOperatorsFromPreset
+        attackers, setAttackers, defenders, setDefenders, reloadOperatorsFromPreset
     };
 }

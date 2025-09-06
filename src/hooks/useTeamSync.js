@@ -1,39 +1,35 @@
-import { useEffect, useCallback } from 'react';
-import { ref, set, onValue, off, update } from "firebase/database";
-import { db } from './useFirebase.js';
-import { v4 as uuidv4 } from 'uuid';
+import {useCallback, useEffect} from 'react';
+import {off, onValue, ref, set, update} from "firebase/database";
+import {db} from './useFirebase.js';
 
 export const useTeamSync = ({
-    teamCode,
-    userUID,
-    role,
-    chosen,
-    locked,
-    played,
-    rerolled,
-    swappableAttack,
-    swappableDefense,
-    setSwappableAttack,
-    setSwappableDefense,
-    setTeammateNames,
-    setTeamData,
-    setChosenAttackers,
-    setChosenDefenders,
-    setLockedAttackers,
-    setLockedDefenders,
-    setRerolledAttackers,
-    setRerolledDefenders,
-    setPlayedAttackers,
-    setPlayedDefenders,
-}) => {
+                                teamCode,
+                                userUID,
+                                role,
+                                chosen,
+                                locked,
+                                played,
+                                rerolled,
+                                swappableAttack,
+                                swappableDefense,
+                                setSwappableAttack,
+                                setSwappableDefense,
+                                setTeammateNames,
+                                setTeamData,
+                                setChosenAttackers,
+                                setChosenDefenders,
+                                setLockedAttackers,
+                                setLockedDefenders,
+                                setRerolledAttackers,
+                                setRerolledDefenders,
+                                setPlayedAttackers,
+                                setPlayedDefenders,
+                            }) => {
     const syncTeamState = useCallback(() => {
         if (!teamCode) return;
         const refPath = `teams/${teamCode}/${userUID}/${role}`;
         set(ref(db, refPath), {
-            chosen: chosen.map(op => ({ name: op.name, uid: op.uid })),
-            locked,
-            played,
-            rerolled
+            chosen: chosen.map(op => ({name: op.name, uid: op.uid})), locked, played, rerolled
         });
 
         const rootUpdate = {};
@@ -55,7 +51,7 @@ export const useTeamSync = ({
 
             const now = Date.now();
             const updatedNames = {};
-            const incoming = { attackers: [], defenders: [] };
+            const incoming = {attackers: [], defenders: []};
 
             for (const [uid, entry] of Object.entries(data)) {
                 updatedNames[uid] = entry.name || "";
@@ -71,9 +67,7 @@ export const useTeamSync = ({
                     const roleList = roleKey === 'attack' ? incoming.attackers : incoming.defenders;
 
                     roleData.chosen.forEach(op => {
-                        const isSwappable =
-                            (roleKey === 'attack' && entry.swappableAttack === op.uid) ||
-                            (roleKey === 'defense' && entry.swappableDefense === op.uid);
+                        const isSwappable = (roleKey === 'attack' && entry.swappableAttack === op.uid) || (roleKey === 'defense' && entry.swappableDefense === op.uid);
                         roleList.push({
                             name: op.name,
                             uid: op.uid,
@@ -96,9 +90,7 @@ export const useTeamSync = ({
                 const swappables = Object.entries(data)
                     .filter(([, val]) => val?.[field])
                     .map(([uid, val]) => ({
-                        uid,
-                        opUid: val[field],
-                        chosen: val?.[sideKey]?.chosen || [],
+                        uid, opUid: val[field], chosen: val?.[sideKey]?.chosen || [],
                     }));
 
                 if (swappables.length !== 2) return;
@@ -112,8 +104,7 @@ export const useTeamSync = ({
 
                 const makeUid = (op) => `${op.name}-${Date.now()}`;
                 const makeOp = (op) => ({
-                    name: op.name,
-                    uid: makeUid(op),
+                    name: op.name, uid: makeUid(op),
                 });
 
                 const newAOp = {
@@ -128,12 +119,8 @@ export const useTeamSync = ({
                     uid: makeUid(aOp)
                 };
 
-                const newAChosen = a.chosen.map(op =>
-                    op.uid === a.opUid ? makeOp(bOp) : op
-                );
-                const newBChosen = b.chosen.map(op =>
-                    op.uid === b.opUid ? makeOp(aOp) : op
-                );
+                const newAChosen = a.chosen.map(op => op.uid === a.opUid ? makeOp(bOp) : op);
+                const newBChosen = b.chosen.map(op => op.uid === b.opUid ? makeOp(aOp) : op);
 
                 updates[`teams/${teamCode}/${a.uid}/${sideKey}/chosen`] = newAChosen;
                 updates[`teams/${teamCode}/${b.uid}/${sideKey}/chosen`] = newBChosen;
@@ -147,69 +134,53 @@ export const useTeamSync = ({
                 // Local updates for current user
                 if (a.uid === userUID) {
                     if (sideKey === 'attack') {
-                        if (typeof setChosenAttackers === 'function')
-                            setChosenAttackers(prev => {
-                                const index = prev.findIndex(op => op.uid === a.opUid);
-                                if (index === -1) return prev;
-                                const updated = [...prev];
-                                updated[index] = newAOp;
-                                return updated;
-                            });
-                        if (typeof setLockedAttackers === 'function')
-                            setLockedAttackers(prev => prev.filter(uid => uid !== a.opUid));
-                        if (typeof setRerolledAttackers === 'function')
-                            setRerolledAttackers(prev => prev.filter(uid => uid !== a.opUid));
-                        if (typeof setPlayedAttackers === 'function')
-                            setPlayedAttackers(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setChosenAttackers === 'function') setChosenAttackers(prev => {
+                            const index = prev.findIndex(op => op.uid === a.opUid);
+                            if (index === -1) return prev;
+                            const updated = [...prev];
+                            updated[index] = newAOp;
+                            return updated;
+                        });
+                        if (typeof setLockedAttackers === 'function') setLockedAttackers(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setRerolledAttackers === 'function') setRerolledAttackers(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setPlayedAttackers === 'function') setPlayedAttackers(prev => prev.filter(uid => uid !== a.opUid));
                     } else {
-                        if (typeof setChosenDefenders === 'function')
-                            setChosenDefenders(prev => {
-                                const index = prev.findIndex(op => op.uid === a.opUid);
-                                if (index === -1) return prev;
-                                const updated = [...prev];
-                                updated[index] = newAOp;
-                                return updated;
-                            });
-                        if (typeof setLockedDefenders === 'function')
-                            setLockedDefenders(prev => prev.filter(uid => uid !== a.opUid));
-                        if (typeof setRerolledDefenders === 'function')
-                            setRerolledDefenders(prev => prev.filter(uid => uid !== a.opUid));
-                        if (typeof setPlayedDefenders === 'function')
-                            setPlayedDefenders(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setChosenDefenders === 'function') setChosenDefenders(prev => {
+                            const index = prev.findIndex(op => op.uid === a.opUid);
+                            if (index === -1) return prev;
+                            const updated = [...prev];
+                            updated[index] = newAOp;
+                            return updated;
+                        });
+                        if (typeof setLockedDefenders === 'function') setLockedDefenders(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setRerolledDefenders === 'function') setRerolledDefenders(prev => prev.filter(uid => uid !== a.opUid));
+                        if (typeof setPlayedDefenders === 'function') setPlayedDefenders(prev => prev.filter(uid => uid !== a.opUid));
                     }
                 }
 
                 if (b.uid === userUID) {
                     if (sideKey === 'attack') {
-                        if (typeof setChosenAttackers === 'function')
-                            setChosenAttackers(prev => {
-                                const index = prev.findIndex(op => op.uid === b.opUid);
-                                if (index === -1) return prev;
-                                const updated = [...prev];
-                                updated[index] = newBOp;
-                                return updated;
-                            });
-                        if (typeof setLockedAttackers === 'function')
-                            setLockedAttackers(prev => prev.filter(uid => uid !== b.opUid));
-                        if (typeof setRerolledAttackers === 'function')
-                            setRerolledAttackers(prev => prev.filter(uid => uid !== b.opUid));
-                        if (typeof setPlayedAttackers === 'function')
-                            setPlayedAttackers(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setChosenAttackers === 'function') setChosenAttackers(prev => {
+                            const index = prev.findIndex(op => op.uid === b.opUid);
+                            if (index === -1) return prev;
+                            const updated = [...prev];
+                            updated[index] = newBOp;
+                            return updated;
+                        });
+                        if (typeof setLockedAttackers === 'function') setLockedAttackers(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setRerolledAttackers === 'function') setRerolledAttackers(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setPlayedAttackers === 'function') setPlayedAttackers(prev => prev.filter(uid => uid !== b.opUid));
                     } else {
-                        if (typeof setChosenDefenders === 'function')
-                            setChosenDefenders(prev => {
-                                const index = prev.findIndex(op => op.uid === b.opUid);
-                                if (index === -1) return prev;
-                                const updated = [...prev];
-                                updated[index] = newBOp;
-                                return updated;
-                            });
-                        if (typeof setLockedDefenders === 'function')
-                            setLockedDefenders(prev => prev.filter(uid => uid !== b.opUid));
-                        if (typeof setRerolledDefenders === 'function')
-                            setRerolledDefenders(prev => prev.filter(uid => uid !== b.opUid));
-                        if (typeof setPlayedDefenders === 'function')
-                            setPlayedDefenders(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setChosenDefenders === 'function') setChosenDefenders(prev => {
+                            const index = prev.findIndex(op => op.uid === b.opUid);
+                            if (index === -1) return prev;
+                            const updated = [...prev];
+                            updated[index] = newBOp;
+                            return updated;
+                        });
+                        if (typeof setLockedDefenders === 'function') setLockedDefenders(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setRerolledDefenders === 'function') setRerolledDefenders(prev => prev.filter(uid => uid !== b.opUid));
+                        if (typeof setPlayedDefenders === 'function') setPlayedDefenders(prev => prev.filter(uid => uid !== b.opUid));
                     }
                 }
 
@@ -224,11 +195,11 @@ export const useTeamSync = ({
             checkSwaps('defense');
         });
 
-        update(ref(db, `teams/${teamCode}/${userUID}`), { lastUpdated: Date.now() })
+        update(ref(db, `teams/${teamCode}/${userUID}`), {lastUpdated: Date.now()})
             .catch((err) => console.error("Firebase update failed:", err));
 
         const interval = setInterval(() => {
-            update(ref(db, `teams/${teamCode}/${userUID}`), { lastUpdated: Date.now() })
+            update(ref(db, `teams/${teamCode}/${userUID}`), {lastUpdated: Date.now()})
                 .catch((err) => console.error("Firebase update failed:", err));
         }, 60000);
 

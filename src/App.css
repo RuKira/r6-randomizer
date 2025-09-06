@@ -3,37 +3,37 @@
 /* default site background */
 body:not(.overlay-mode),
 html:not(.overlay-mode) {
-  margin: 0;
-  padding: 0;
-  background-color: #111; /* <-- stays for main app */
-  color: white;
-  font-family: "Anonymous Pro", monospace;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
+    margin: 0;
+    padding: 0;
+    background-color: #111; /* <-- stays for main app */
+    color: white;
+    font-family: "Anonymous Pro", monospace;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
 }
 
 /* overlay mode explicitly transparent */
 body.overlay-mode,
 html.overlay-mode {
-  background: transparent !important;
-  outline: #111;
+    background: transparent !important;
+    outline: #111;
 }
 
 
 .fullscreen {
-  height: 100vh;
-  width: 100vw;
-  display: flex;
-  align-items: start;
-  justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: start;
+    justify-content: center;
 }
 
 .viewport-scaler {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: start;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: start;
 }

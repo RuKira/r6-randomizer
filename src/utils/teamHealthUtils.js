@@ -1,4 +1,4 @@
-import { operatorRoles } from "./roleMap";
+import {operatorRoles} from "./roleMap";
 
 export function analyzeTeamComposition(team, side) {
     const roleCounts = {};

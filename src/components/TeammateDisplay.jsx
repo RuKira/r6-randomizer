@@ -4,7 +4,7 @@ import '../styles/teammate.css';
 
 // ADD COMMENTS TO EXPLAIN THE FUNCTIONALITY
 
-export default function TeammateView({ teamData, teammateNames, userUID }) {
+export default function TeammateView({teamData, teammateNames, userUID}) {
     // Group operators by owner UID
     const grouped = {};
     for (const op of teamData) {
@@ -15,11 +15,9 @@ export default function TeammateView({ teamData, teammateNames, userUID }) {
     // Limit to 4 teammates max
     const teammateUIDs = Object.keys(grouped).filter(uid => uid !== userUID).slice(0, 4);
 
-    return (
-        <div className="teammates-row">
-            {teammateUIDs.map((uid, index) => (
-                <div key={uid}>
-                    {index !== 0 && <div className="teammate-divider" />}
+    return (<div className="teammates-row">
+            {teammateUIDs.map((uid, index) => (<div key={uid}>
+                    {index !== 0 && <div className="teammate-divider"/>}
 
                     <div className="teammate-name">
                         <div className="teammate-display-name">
@@ -28,8 +26,7 @@ export default function TeammateView({ teamData, teammateNames, userUID }) {
                     </div>
 
                     <div className="teammate-group">
-                        {grouped[uid].map((op, idx) => (
-                            <div
+                        {grouped[uid].map((op, idx) => (<div
                                 key={idx}
                                 className={`teammate-icon-wrapper ${op.locked ? 'locked' : ''} ${op.rerolled ? 'rerolled' : ''} ${op.played ? 'played' : ''} ${op.swapped ? 'swapped' : ''}`}
                                 title={op.name}
@@ -39,11 +36,8 @@ export default function TeammateView({ teamData, teammateNames, userUID }) {
                                     alt={op.name}
                                     className="teammate-icon"
                                 />
-                            </div>
-                        ))}
+                            </div>))}
                     </div>
-                </div>
-            ))}
-        </div>
-    );
+                </div>))}
+        </div>);
 }

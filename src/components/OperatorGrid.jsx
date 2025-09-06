@@ -2,28 +2,18 @@ import '../styles/grid.css';
 
 // ADD COMMENTS TO EXPLAIN THE FUNCTIONALITY
 
-export default function OperatorGrid({ list, role, toggleOperator, weightChanges }) {
+export default function OperatorGrid({list, role, toggleOperator, weightChanges}) {
     // Filter out hidden ops (like Wildcard)
     const visibleList = list.filter(op => !op.hidden);
 
-    const placeholders = role === 'defense'
-        ? Array(0).fill(null).map((_, i) => ({
-            uid: `placeholder-${role}-${i}`,
-            name: "",
-            role,
-            enabled: false,
-            weight: 0,
-            image: "",
-            placeholder: true
-        }))
-        : [];
+    const placeholders = role === 'defense' ? Array(0).fill(null).map((_, i) => ({
+        uid: `placeholder-${role}-${i}`, name: "", role, enabled: false, weight: 0, image: "", placeholder: true
+    })) : [];
 
     const fullList = [...visibleList, ...placeholders];
 
-    return (
-        <div className="grid-operators">
-            {fullList.map((op) => (
-                <div
+    return (<div className="grid-operators">
+            {fullList.map((op) => (<div
                     key={op.uid}
                     title={op.name}
                     className={`
@@ -36,14 +26,8 @@ export default function OperatorGrid({ list, role, toggleOperator, weightChanges
                     `}
                     onClick={() => !op.placeholder && toggleOperator(op.uid, role)}
                 >
-                    {!op.placeholder && op.enabled && (
-                        <span className="op-weight">{op.weight}</span>
-                    )}
-                    {!op.placeholder && (
-                        <img src={op.image} alt={op.name} />
-                    )}
-                </div>
-            ))}
-        </div>
-    );
+                    {!op.placeholder && op.enabled && (<span className="op-weight">{op.weight}</span>)}
+                    {!op.placeholder && (<img src={op.image} alt={op.name}/>)}
+                </div>))}
+        </div>);
 }

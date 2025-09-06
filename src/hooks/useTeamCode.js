@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useState} from "react";
 
 export function useTeamCode() {
     const [teamCode, setTeamCode] = useState(localStorage.getItem("team-code") || "");

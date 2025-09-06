@@ -1,25 +1,25 @@
-import { saveDisabledOperators } from "./operatorUtils.js";
-import { refreshOps } from "./resetUtils.js";
+import {saveDisabledOperators} from "./operatorUtils.js";
+import {refreshOps} from "./resetUtils.js";
 
 /**
  * Removes a chosen operator and marks it as played.
  */
 export const removeChosen = ({
-    uid,
-    role,
-    teamCode,
-    teamData,
-    setChosenAttackers,
-    setChosenDefenders,
-    setPlayedAttackers,
-    setPlayedDefenders,
-    setRemovingAttackers,
-    setRemovingDefenders,
-    setLockedAttackers,
-    setLockedDefenders,
-    syncAttack,
-    syncDefense,
-}) => {
+                                 uid,
+                                 role,
+                                 teamCode,
+                                 teamData,
+                                 setChosenAttackers,
+                                 setChosenDefenders,
+                                 setPlayedAttackers,
+                                 setPlayedDefenders,
+                                 setRemovingAttackers,
+                                 setRemovingDefenders,
+                                 setLockedAttackers,
+                                 setLockedDefenders,
+                                 syncAttack,
+                                 syncDefense,
+                             }) => {
     const isTeamView = teamCode && teamData;
 
     if (role === 'attack') {
@@ -58,10 +58,8 @@ export const removeChosen = ({
  * Saves the currently enabled/disabled operators.
  */
 export const handleSavePreset = ({
-    attackers,
-    defenders,
-    showFeedback,
-}) => {
+                                     attackers, defenders, showFeedback,
+                                 }) => {
     saveDisabledOperators(attackers, defenders);
     showFeedback("Preset saved!");
 };
@@ -70,22 +68,22 @@ export const handleSavePreset = ({
  * Resets all operators to enabled and clears weights, then saves as the default.
  */
 export const handleDefaultPreset = ({
-    attackers,
-    defenders,
-    setAttackers,
-    setDefenders,
-    showFeedback,
-    setChosenAttackers,
-    setChosenDefenders,
-    setLockedAttackers,
-    setLockedDefenders,
-    setRerolledAttackers,
-    setRerolledDefenders,
-    setPlayedAttackers,
-    setPlayedDefenders
-}) => {
-    const resetAttack = attackers.map(op => ({ ...op, enabled: true }));
-    const resetDefense = defenders.map(op => ({ ...op, enabled: true }));
+                                        attackers,
+                                        defenders,
+                                        setAttackers,
+                                        setDefenders,
+                                        showFeedback,
+                                        setChosenAttackers,
+                                        setChosenDefenders,
+                                        setLockedAttackers,
+                                        setLockedDefenders,
+                                        setRerolledAttackers,
+                                        setRerolledDefenders,
+                                        setPlayedAttackers,
+                                        setPlayedDefenders
+                                    }) => {
+    const resetAttack = attackers.map(op => ({...op, enabled: true}));
+    const resetDefense = defenders.map(op => ({...op, enabled: true}));
 
     setAttackers(resetAttack);
     setDefenders(resetDefense);
@@ -108,10 +106,8 @@ export const handleDefaultPreset = ({
  * Saves operator weights (e.g., for tracking roll frequency).
  */
 export const handleSaveWeights = ({
-    attackers,
-    defenders,
-    showFeedback,
-}) => {
+                                      attackers, defenders, showFeedback,
+                                  }) => {
     saveDisabledOperators(attackers, defenders, true);
     showFeedback("Weights saved to preset!");
 };

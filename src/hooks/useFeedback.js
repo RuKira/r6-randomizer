@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useState} from "react";
 
 export function useFeedback() {
     const [feedback, setFeedback] = useState("");
@@ -6,5 +6,5 @@ export function useFeedback() {
         setFeedback(message);
         setTimeout(() => setFeedback(""), 2000);
     };
-    return { feedback, showFeedback };
+    return {feedback, showFeedback};
 }

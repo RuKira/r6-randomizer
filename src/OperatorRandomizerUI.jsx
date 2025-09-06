@@ -1,31 +1,31 @@
 // NPM package imports
 import pkg from '../package.json';
-import { useEffect, useRef, useState } from 'react';
-import { ref, update } from "firebase/database";
-import { v4 as generateUUID } from 'uuid';
+import {useEffect, useRef, useState} from 'react';
+import {ref, update} from "firebase/database";
+import {v4 as generateUUID} from 'uuid';
 // Local Constants Imports
-import { attackerNames, defenderNames } from "./constants/operatorNames.js";
+import {attackerNames, defenderNames} from "./constants/operatorNames.js";
 // Local Component Imports
 import TeammateView from './components/TeammateDisplay';
 import ChosenOperators from './components/ChosenOperators';
 import OperatorGrid from "./components/OperatorGrid.jsx";
 // Local Hook Imports
-import { useTeamSync } from "./hooks/useTeamSync.js";
-import { useLayoutScale } from "./hooks/useLayoutScale.js";
-import { db } from './hooks/useFirebase.js';
-import { useOperatorsState } from "./hooks/useOperatorsState.js";
-import { useTeamCode } from "./hooks/useTeamCode.js";
-import { useFeedback } from "./hooks/useFeedback.js";
+import {useTeamSync} from "./hooks/useTeamSync.js";
+import {useLayoutScale} from "./hooks/useLayoutScale.js";
+import {db} from './hooks/useFirebase.js';
+import {useOperatorsState} from "./hooks/useOperatorsState.js";
+import {useTeamCode} from "./hooks/useTeamCode.js";
+import {useFeedback} from "./hooks/useFeedback.js";
 // Local Utility Imports
-import { rollOperatorsForRole, rerollOperator } from "./utils/rollUtils.js";
-import { buildOps, loadDisabledOperators, toggleOperator as baseToggleOperator } from "./utils/operatorUtils.js";
-import { refreshOps } from "./utils/resetUtils.js";
-import { toggleLock } from "./utils/lockUtils.js";
-import { removeChosen, handleSaveWeights, handleSavePreset, handleDefaultPreset } from "./utils/presetUtils.js";
+import {rerollOperator, rollOperatorsForRole} from "./utils/rollUtils.js";
+import {buildOps, loadDisabledOperators, toggleOperator as baseToggleOperator} from "./utils/operatorUtils.js";
+import {refreshOps} from "./utils/resetUtils.js";
+import {toggleLock} from "./utils/lockUtils.js";
+import {handleDefaultPreset, handleSavePreset, handleSaveWeights, removeChosen} from "./utils/presetUtils.js";
 // Local Style Imports
 import './styles/buttons.css';
 import './App.css';
-import { analyzeTeamComposition } from "./utils/teamHealthUtils.js";
+import {analyzeTeamComposition} from "./utils/teamHealthUtils.js";
 
 function OperatorRandomizerUI() {
 
@@ -41,11 +41,11 @@ function OperatorRandomizerUI() {
     const [fadingReroll, _setFadingReroll] = useState(null);
     const [allowDupes, setAllowDupes] = useState(true);
     const [weightChanges, setWeightChanges] = useState({});
-    const [teamData, setTeamData] = useState({ attackers: [], defenders: [] });
+    const [teamData, setTeamData] = useState({attackers: [], defenders: []});
     const [teammateNames, setTeammateNames] = useState({});
     const [removingAttackers, setRemovingAttackers] = useState([]);
     const [removingDefenders, setRemovingDefenders] = useState([]);
-    const [healthCheck, setHealthCheck] = useState({ attackers: [], defenders: [] });
+    const [healthCheck, setHealthCheck] = useState({attackers: [], defenders: []});
     const [swappableAttack, setSwappableAttack] = useState(null);
     const [swappableDefense, setSwappableDefense] = useState(null);
 
@@ -59,19 +59,17 @@ function OperatorRandomizerUI() {
     const APP_VERSION = `v${pkg.version}`;
 
     const {
-        attackers, setAttackers,
-        defenders, setDefenders,
-        reloadOperatorsFromPreset
+        attackers, setAttackers, defenders, setDefenders, reloadOperatorsFromPreset
     } = useOperatorsState(STORAGE_KEY, attackerNames, defenderNames);
 
 
-    const { teamCode, setTeamCode, myName, setMyName, userUID } = useTeamCode();
+    const {teamCode, setTeamCode, myName, setMyName, userUID} = useTeamCode();
 
     const [pendingCode, setPendingCode] = useState(teamCode || "");
 
-    const { feedback, showFeedback } = useFeedback();
+    const {feedback, showFeedback} = useFeedback();
 
-    const { syncTeamState: syncAttack } = useTeamSync({
+    const {syncTeamState: syncAttack} = useTeamSync({
         teamCode,
         userUID,
         role: 'attack',
@@ -91,7 +89,7 @@ function OperatorRandomizerUI() {
         setPlayedAttackers,
     });
 
-    const { syncTeamState: syncDefense } = useTeamSync({
+    const {syncTeamState: syncDefense} = useTeamSync({
         teamCode,
         userUID,
         role: 'defense',
@@ -125,10 +123,10 @@ function OperatorRandomizerUI() {
         if (!teamCode) return;
 
         const path = `teams/${teamCode}/${userUID}`;
-        update(ref(db, path), { lastUpdated: Date.now() })
+        update(ref(db, path), {lastUpdated: Date.now()})
             .catch((err) => console.error("Firebase update failed:", err));
         const interval = setInterval(() => {
-            update(ref(db, path), { lastUpdated: Date.now() })
+            update(ref(db, path), {lastUpdated: Date.now()})
                 .catch((err) => console.error("Firebase update failed:", err));
         }, 60000); // refresh every minute
 
@@ -171,7 +169,7 @@ function OperatorRandomizerUI() {
         const attackAlerts = analyzeTeamComposition(fullAttackTeam, "attack");
         const defenseAlerts = analyzeTeamComposition(fullDefenseTeam, "defense");
 
-        setHealthCheck({ attackers: attackAlerts, defenders: defenseAlerts });
+        setHealthCheck({attackers: attackAlerts, defenders: defenseAlerts});
     }, [chosenAttackers, chosenDefenders, teamData]);
 
     // Functions
@@ -258,15 +256,14 @@ function OperatorRandomizerUI() {
     };
 
     const resetAll = () => {
-        const resetWeights = list => list.map(op => ({ ...op, weight: 5 }));
+        const resetWeights = list => list.map(op => ({...op, weight: 5}));
 
         setAttackers(prev => resetWeights(prev));
         setDefenders(prev => resetWeights(prev));
 
         handleReset();
     };
-    return (
-        <div className="viewport-scaler">
+    return (<div className="viewport-scaler">
             <div className="grid-layout centered fullscreen">
                 <div className="chosen-list chosen-left">
                     <ChosenOperators
@@ -279,36 +276,32 @@ function OperatorRandomizerUI() {
                         removingAttackers={removingAttackers}
                         removingDefenders={removingDefenders}
                         rerollOperator={handleRerollOperator}
-                        toggleLock={(uid, role) =>
-                            toggleLock({
-                                uid,
-                                role,
-                                lockedAttackers,
-                                lockedDefenders,
-                                setLockedAttackers,
-                                setLockedDefenders,
-                                syncAttack,
-                                syncDefense
-                            })
-                        }
-                        removeChosen={(uid, role) =>
-                            removeChosen({
-                                uid,
-                                role,
-                                teamCode,
-                                teamData,
-                                setPlayedAttackers,
-                                setPlayedDefenders,
-                                setRemovingAttackers,
-                                setRemovingDefenders,
-                                setChosenAttackers,
-                                setChosenDefenders,
-                                setLockedAttackers,
-                                setLockedDefenders,
-                                syncAttack,
-                                syncDefense
-                            })
-                        }
+                        toggleLock={(uid, role) => toggleLock({
+                            uid,
+                            role,
+                            lockedAttackers,
+                            lockedDefenders,
+                            setLockedAttackers,
+                            setLockedDefenders,
+                            syncAttack,
+                            syncDefense
+                        })}
+                        removeChosen={(uid, role) => removeChosen({
+                            uid,
+                            role,
+                            teamCode,
+                            teamData,
+                            setPlayedAttackers,
+                            setPlayedDefenders,
+                            setRemovingAttackers,
+                            setRemovingDefenders,
+                            setChosenAttackers,
+                            setChosenDefenders,
+                            setLockedAttackers,
+                            setLockedDefenders,
+                            syncAttack,
+                            syncDefense
+                        })}
                         swappableUid={swappableAttack}
                         onPickForSwap={(uid) => setSwappableAttack(prev => prev === uid ? null : uid)}
                     />
@@ -353,7 +346,7 @@ function OperatorRandomizerUI() {
                             placeholder="Your name..."
                             value={myName}
                             onChange={(e) => setMyName(e.target.value)}
-                            style={{ padding: "6px", width: "160px", marginBottom: "6px" }}
+                            style={{padding: "6px", width: "160px", marginBottom: "6px"}}
                         />
                     </div>
 
@@ -365,13 +358,13 @@ function OperatorRandomizerUI() {
 
                                 setTeamCode(pendingCode.trim());
 
-                                update(ref(db, `teams/${pendingCode}/${userUID}`), { name: myName })
+                                update(ref(db, `teams/${pendingCode}/${userUID}`), {name: myName})
                                     .catch((err) => console.error("Firebase update failed:", err));
 
                                 localStorage.setItem("team-username", myName);
                                 window.location.reload();
                             }}
-                            style={{ marginLeft: "6px" }}
+                            style={{marginLeft: "6px"}}
                         >
                             Join
                         </button>
@@ -381,7 +374,7 @@ function OperatorRandomizerUI() {
                                 const newCode = generateUUID().slice(0, 6);
                                 setPendingCode(newCode);
                             }}
-                            style={{ marginLeft: "6px" }}
+                            style={{marginLeft: "6px"}}
                         >
                             Generate
                         </button>
@@ -397,7 +390,7 @@ function OperatorRandomizerUI() {
                         <label
                             className="allow-dupes-toggle"
                             title="Toggle whether duplicate operators can appear in the same roll."
-                            style={{ marginTop: "6px", display: "flex", alignItems: "center", gap: "6px" }}
+                            style={{marginTop: "6px", display: "flex", alignItems: "center", gap: "6px"}}
                             onClick={(e) => e.stopPropagation()}
                         >
                             <input
@@ -415,41 +408,26 @@ function OperatorRandomizerUI() {
                         RESET ALL
                     </button>
 
-                    <button onClick={() =>
-                        handleSavePreset({
-                            attackers,
-                            defenders,
-                            showFeedback
-                        })
-                    }
-                        title="Save your enabled/disabled operator selection. Click operators in the grid to disable them."
+                    <button onClick={() => handleSavePreset({
+                        attackers, defenders, showFeedback
+                    })}
+                            title="Save your enabled/disabled operator selection. Click operators in the grid to disable them."
                     >
                         SAVE SELECTION
                     </button>
 
-                    <button onClick={() =>
-                        handleSaveWeights({
-                            attackers,
-                            defenders,
-                            showFeedback
-                        })
-                    }
-                        title="Save the current operator weights based on usage. You'll see weights adjust as you spin."
+                    <button onClick={() => handleSaveWeights({
+                        attackers, defenders, showFeedback
+                    })}
+                            title="Save the current operator weights based on usage. You'll see weights adjust as you spin."
                     >
                         SAVE WEIGHTS
                     </button>
 
-                    <button onClick={() =>
-                        handleDefaultPreset({
-                            attackers,
-                            defenders,
-                            setAttackers,
-                            setDefenders,
-                            showFeedback,
-                            refreshOps: handleReset // OR pass refreshOps directly if preferred
-                        })
-                    }
-                        title="Reset everything to default: re-enables all operators, resets weights, and overwrites your current save."
+                    <button onClick={() => handleDefaultPreset({
+                        attackers, defenders, setAttackers, setDefenders, showFeedback, refreshOps: handleReset // OR pass refreshOps directly if preferred
+                    })}
+                            title="Reset everything to default: re-enables all operators, resets weights, and overwrites your current save."
                     >
                         DEFAULT SELECTION
                     </button>
@@ -487,43 +465,38 @@ function OperatorRandomizerUI() {
                         removingAttackers={removingAttackers}
                         removingDefenders={removingDefenders}
                         rerollOperator={handleRerollOperator}
-                        toggleLock={(uid, role) =>
-                            toggleLock({
-                                uid,
-                                role,
-                                lockedAttackers,
-                                lockedDefenders,
-                                setLockedAttackers,
-                                setLockedDefenders,
-                                syncAttack,
-                                syncDefense
-                            })
-                        }
-                        removeChosen={(uid, role) =>
-                            removeChosen({
-                                uid,
-                                role,
-                                teamCode,
-                                teamData,
-                                setPlayedAttackers,
-                                setPlayedDefenders,
-                                setRemovingAttackers,
-                                setRemovingDefenders,
-                                setChosenAttackers,
-                                setChosenDefenders,
-                                setLockedAttackers,
-                                setLockedDefenders,
-                                syncAttack,
-                                syncDefense
-                            })
-                        }
+                        toggleLock={(uid, role) => toggleLock({
+                            uid,
+                            role,
+                            lockedAttackers,
+                            lockedDefenders,
+                            setLockedAttackers,
+                            setLockedDefenders,
+                            syncAttack,
+                            syncDefense
+                        })}
+                        removeChosen={(uid, role) => removeChosen({
+                            uid,
+                            role,
+                            teamCode,
+                            teamData,
+                            setPlayedAttackers,
+                            setPlayedDefenders,
+                            setRemovingAttackers,
+                            setRemovingDefenders,
+                            setChosenAttackers,
+                            setChosenDefenders,
+                            setLockedAttackers,
+                            setLockedDefenders,
+                            syncAttack,
+                            syncDefense
+                        })}
                         swappableUid={swappableDefense}
                         onPickForSwap={(uid) => setSwappableDefense(prev => prev === uid ? null : uid)}
                     />
                 </div>
             </div>
-        </div >
-    );
+        </div>);
 }
 
 export default OperatorRandomizerUI;
