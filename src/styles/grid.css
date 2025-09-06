@@ -29,6 +29,8 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 10px;
+    border: dimgray 2px solid;
+    padding: 10px;
 }
 
 .op-icon {
