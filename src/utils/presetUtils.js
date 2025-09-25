@@ -111,3 +111,22 @@ export const handleSaveWeights = ({
     saveDisabledOperators(attackers, defenders, true);
     showFeedback("Weights saved to preset!");
 };
+
+// Save preset
+export function savePreset(name, state) {
+    const presets = JSON.parse(localStorage.getItem("presets") || "{}");
+    presets[name] = state;
+    localStorage.setItem("presets", JSON.stringify(presets));
+}
+
+// Load preset
+export function loadPreset(name) {
+    const presets = JSON.parse(localStorage.getItem("presets") || "{}");
+    return presets[name] || null;
+}
+
+// Get list of preset names
+export function listPresets() {
+    return Object.keys(JSON.parse(localStorage.getItem("presets") || "{}"));
+}
+

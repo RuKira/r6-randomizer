@@ -280,6 +280,8 @@ function OperatorRandomizerUI() {
                     onClose={() => setShowAdvanced(false)}
                     attackers={attackers}
                     defenders={defenders}
+                    setAttackers={setAttackers}
+                    setDefenders={setDefenders}
                     toggleOperator={toggleOperator}
                     handleSavePreset={handleSavePreset}
                     handleResetPreset={resetAll}

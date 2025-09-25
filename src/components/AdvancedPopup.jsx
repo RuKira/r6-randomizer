@@ -1,16 +1,20 @@
-import React from "react";
+import { React, useState } from "react";
 import {v4 as generateUUID} from 'uuid';
 import "../styles/advanced.css";
 import "../styles/buttons.css";
 import "../styles/grid.css";
 import { update, ref } from "firebase/database";
-import { db } from "../hooks/useFirebase"; // adjust path if needed
+import { db } from "../hooks/useFirebase";
+import SavePresetModal from "./SavePresetModal.jsx";
+import { savePreset, loadPreset, listPresets } from "../utils/presetUtils.js";
 
 
 export default function AdvancedPopup({
                                           onClose,
                                           attackers,
                                           defenders,
+                                          setAttackers,
+                                          setDefenders,
                                           toggleOperator,
                                           handleSavePreset,
                                           handleResetPreset,
@@ -27,6 +31,51 @@ export default function AdvancedPopup({
                                           showFeedback,
                                           userUID
                                       }) {
+    const [showPresetModal, setShowPresetModal] = useState(false);
+    const [presets, setPresets] = useState(listPresets());
+
+    function handleSaveAsPreset(name) {
+        const cleanedAttackers = attackers.map(op => ({
+            uid: op.uid,
+            name: op.name,
+            enabled: op.enabled
+        }));
+        const cleanedDefenders = defenders.map(op => ({
+            uid: op.uid,
+            name: op.name,
+            enabled: op.enabled
+        }));
+
+        savePreset(name, { attackers: cleanedAttackers, defenders: cleanedDefenders });
+        setPresets(listPresets());
+        showFeedback?.(`Preset "${name}" saved!`);
+    }
+
+    function handleLoadPreset(name) {
+        const preset = loadPreset(name);
+        if (preset) {
+            if (preset.attackers) {
+                setAttackers(prev =>
+                    prev.map(op => {
+                        const match = preset.attackers.find(p => p.uid === op.uid);
+                        return match ? { ...op, enabled: match.enabled } : op;
+                    })
+                );
+            }
+
+            if (preset.defenders) {
+                setDefenders(prev =>
+                    prev.map(op => {
+                        const match = preset.defenders.find(p => p.uid === op.uid);
+                        return match ? { ...op, enabled: match.enabled } : op;
+                    })
+                );
+            }
+
+            showFeedback?.(`Preset "${name}" loaded!`);
+        }
+    }
+
     // Generate a new team code (like before)
     const generateTeamCode = () => {
         const newCode = generateUUID().slice(0, 6);
@@ -100,23 +149,19 @@ export default function AdvancedPopup({
                 <div className="buttons-area">
                     <button
                         onClick={() => {
-                            handleSavePreset({attackers, defenders, showFeedback});
+                            handleSavePreset({ attackers, defenders, showFeedback });
                         }}
                     >
                         Save
                     </button>
 
-                    <button
-                        onClick={() => {
-                            handleResetPreset();
-                        }}
-                    >
-                        Reset
-                    </button>
+                    <button onClick={() => setShowPresetModal(true)}>Save As Preset</button>
+
+                    <button onClick={() => handleResetPreset()}>Reset</button>
 
                     <button
                         onClick={() => {
-                            handleSaveWeights({attackers, defenders, showFeedback});
+                            handleSaveWeights({ attackers, defenders, showFeedback });
                         }}
                     >
                         Save Weights
@@ -124,14 +169,24 @@ export default function AdvancedPopup({
 
                     <button
                         onClick={() => {
-                            handleDefaultPreset({attackers, defenders, showFeedback});
+                            handleDefaultPreset({ attackers, defenders, showFeedback });
                         }}
                     >
                         Default
                     </button>
+
                     <button onClick={() => setDupeToggle(!dupeToggle)}>
                         {dupeToggle ? "Disable Dupes" : "Enable Dupes"}
                     </button>
+
+                    <select onChange={(e) => handleLoadPreset(e.target.value)}>
+                        <option value="">-- Load Preset --</option>
+                        {presets.map((p) => (
+                            <option key={p} value={p}>
+                                {p}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </section>
 
@@ -153,6 +208,12 @@ export default function AdvancedPopup({
                 <button onClick={handleJoinTeam}>Join</button>
                 <button onClick={generateTeamCode}>Generate</button>
             </section>
+            {showPresetModal && (
+                <SavePresetModal
+                    onSave={handleSaveAsPreset}
+                    onClose={() => setShowPresetModal(false)}
+                />
+            )}
         </div>
     </div>);
 }
