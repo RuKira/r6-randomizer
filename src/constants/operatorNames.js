@@ -2,7 +2,7 @@ export const attackerNames = [
     "Striker", "Sledge", "Thatcher", "Ash", "Thermite", "Twitch", "Montagne", "Glaz", "Fuze", "Blitz", "IQ",
     "Buck", "Blackbeard", "Capitao", "Hibana", "Jackal", "Ying", "Zofia", "Dokkaebi",
     "Maverick", "Lion", "Finka", "Nomad", "Gridlock", "Nokk", "Amaru", "Kali", "Iana", "Ace", "Zero", "Flores", "Osa",
-    "Sens", "Grim", "Brava", "Ram", "Deimos", "Rauora"
+    "Sens", "Grim", "Brava", "Ram", "Deimos", "Rauora", "SolidSnake"
 ];
 
 export const defenderNames = [

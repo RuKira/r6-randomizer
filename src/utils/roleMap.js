@@ -78,6 +78,7 @@ export const operatorRoles = {
     Deimos: ["Intel", "Map Control"],
     Striker: ["Support"],
     Rauora: ["Support", "Map Control"],
+    SolidSnake: ["Intel", "Front Line"],
 
     // Wild
     Wildcard: ["Anti-Breach", "Crown Control", "Trapper", "Anti-Entry", "Intel", "Support", "Hard-Breach", "Map Control", "Front Line", "Anti-Gadget", "Breach"]
